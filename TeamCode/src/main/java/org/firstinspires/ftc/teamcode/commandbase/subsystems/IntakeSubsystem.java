@@ -1,15 +1,17 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
-import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.teamcode.globals.RobotHardware;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
-import org.firstinspires.ftc.teamcode.globals.RobotHardware;
 
-public class IntakeSubsystem extends SubsystemBase implements RobotConstants {
+
+public class IntakeSubsystem extends SubsystemBase {
     private final RobotHardware robot;
+
+    private PIDFController intakeController;
 
     public IntakeSubsystem(RobotHardware robot) {
         this.robot = robot;
@@ -18,6 +20,8 @@ public class IntakeSubsystem extends SubsystemBase implements RobotConstants {
         robot.intakeServo.setInverted(false);
 
         robot.intakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+
+        intakeController = new PIDFController(RobotConstants.intakePIDFCoefficients);
     }
 
     public void setPower(double power) {
@@ -25,15 +29,19 @@ public class IntakeSubsystem extends SubsystemBase implements RobotConstants {
     }
 
     public void intake() {
-        setPower(intakePower);
+        setPower(RobotConstants.intakePower);
     }
 
     public void servoUp() {
-        robot.intakeServo.set(servoUpPos);
+        robot.intakeServo.set(RobotConstants.servoUpPos);
     }
 
     public void servoDown() {
-        robot.intakeServo.set(servoDownPos);
+        robot.intakeServo.set(RobotConstants.servoDownPos);
+    }
+    public void setVelocity(double setpoint) {
+        robot.intakeMotor.set(intakeController.calculate(setpoint));
+        //Method must be called each cycle (.calculate() needs to be called each cycle)
     }
 
 }
