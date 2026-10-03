@@ -16,6 +16,7 @@ public class RobotHardware {
 
     private final OpMode opMode;
     public final Motor intakeMotor;
+    public final Motor transferMotor;
     public final ServoEx intakeServo;
     public final AprilTagProcessor aprilTag;
     public final VisionPortal visionPortal;
@@ -25,6 +26,7 @@ public class RobotHardware {
         HardwareMap hardwareMap = opMode.hardwareMap;
 
         intakeMotor = new MotorEx(hardwareMap, "intakeMotor");
+        transferMotor = new MotorEx(hardwareMap, "transferMotor");
         intakeServo = new ServoEx(hardwareMap, "intakeServo");
 
         aprilTag = new AprilTagProcessor.Builder()
