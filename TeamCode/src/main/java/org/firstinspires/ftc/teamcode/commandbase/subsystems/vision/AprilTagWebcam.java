@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.commandbase.subsystems.vision;
 
 import android.annotation.SuppressLint;
 
+import com.qualcomm.robotcore.robot.Robot;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -59,16 +61,16 @@ public class AprilTagWebcam {
             }
         }
 
-        if (hiveTag == null) {
+        if (hiveTag == null || hiveTag.ftcPose == null) {
             return -1;
         }
+        double cameraRadians = Math.toRadians(RobotConstants.cameraAngle);
+        double hiveHeightInches = RobotConstants.cameraHeightIn + ((hiveTag.ftcPose.z * Math.cos(cameraRadians)) + (hiveTag.ftcPose.y * Math.sin(cameraRadians)));
 
-        double hivePitch = hiveTag.ftcPose.pitch;
-
-        if (hivePitch > RobotConstants.hiveUpPitch) {
+        if (hiveHeightInches > RobotConstants.hiveHeightUp) {
             return 1;
         }
-        else if (hivePitch < RobotConstants.hiveDownPitch) {
+        else if (hiveHeightInches < RobotConstants.hiveHeightDown) {
             return 2;
         } else {
             return 0;
