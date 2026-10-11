@@ -17,7 +17,6 @@ public class IntakeSubsystem extends SubsystemBase {
         this.robot = robot;
 
         robot.intakeMotor.setInverted(false);
-        robot.transferMotor.setInverted(false);
         robot.intakeServo.setInverted(false);
 
         robot.intakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
@@ -25,16 +24,12 @@ public class IntakeSubsystem extends SubsystemBase {
         intakeController = new PIDFController(RobotConstants.intakePIDFCoefficients);
     }
 
-    public void setIntakePower(double power) {
+    public void setPower(double power) {
         robot.intakeMotor.set(power);
-    }
-    public void setTransferPower(double power) {
-        robot.transferMotor.set(power);
     }
 
     public void intake() {
-        setIntakePower(RobotConstants.intakePower);
-        setTransferPower(-RobotConstants.intakePower);
+        setPower(RobotConstants.intakePower);
     }
 
     public void rampUp(){
