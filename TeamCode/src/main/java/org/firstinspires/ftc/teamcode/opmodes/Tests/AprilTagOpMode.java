@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.vision.AprilTagWebcam;
+import org.firstinspires.ftc.teamcode.globals.RobotConstants;
 import org.firstinspires.ftc.teamcode.globals.RobotHardware;
 
 
@@ -27,7 +28,7 @@ public class AprilTagOpMode extends LinearOpMode {
 
             aprilTagWebcam.telemetryAprilTag(telemetry);
 
-            int hiveTipped = aprilTagWebcam.hiveTipped(target_id);
+            RobotConstants.HiveState hiveTipped = aprilTagWebcam.getHiveState(target_id);
 
             telemetry.addData("Hive Tipped: ", hiveTipped);
 
