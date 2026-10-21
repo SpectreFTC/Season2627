@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.geometry.Pose2d;
+import com.seattlesolvers.solverslib.geometry.Rotation2d;
 import com.seattlesolvers.solverslib.geometry.Translation2d;
 
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.PinpointOdometrySubsystem;
@@ -22,6 +23,9 @@ public class PinpointTest extends OpMode {
     BulkCache bulkCache;
     public static double x;
     public static double y;
+    public static double ___resetX;
+    public static double __resetY;
+    public static double _resetH;
     @Override
     public void init() {
         r = RobotHardware.getInstance(this);
@@ -35,9 +39,14 @@ public class PinpointTest extends OpMode {
     @Override
     public void loop() {
         bulkCache.clearCache();
-        multipleTelemetry.addLine(odo.toString());
-        multipleTelemetry.addData("distance to: X: "+x+" Y: "+y , odo.getDistanceTo(new Translation2d(x, y)));
         odo.update();
+        if(gamepad1.a){
+            odo.resetTo(new Pose2d(___resetX, __resetY, Rotation2d.fromDegrees(_resetH)));
+        }
+        multipleTelemetry.addLine(odo.toString());
+
+        multipleTelemetry.addData("distance to: X: "+x+" Y: "+y , odo.getDistanceTo(new Translation2d(x, y)));
+
         multipleTelemetry.update();
 
     }

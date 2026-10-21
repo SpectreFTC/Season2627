@@ -35,14 +35,15 @@ public class MainTeleop {
     public final PinpointOdometrySubsystem pinpointOdometrySubsystem;
     public final CommandScheduler commandScheduler;
     Pose2d resetPoseRA = new Pose2d(63.182, 69.812, Rotation2d.fromDegrees(-90)),
-            resetPoseRS = new Pose2d(63.182, -69.182, Rotation2d.fromDegrees(-90)),
+            resetPoseRS = new Pose2d(63.812, -69.812, Rotation2d.fromDegrees(-90)),
             resetPoseBS = new Pose2d(-63.182, 69.812, Rotation2d.fromDegrees(90)),
-            resetPoseBA = new Pose2d(-63.182, 69.812, Rotation2d.fromDegrees(90));
+            resetPoseBA = new Pose2d(-69.7, -54.7, Rotation2d.fromDegrees(90));
     Translation2d goalPos = new Translation2d(), goalPosT1, goalPosT2;
     Translation2d goalPosB1 = new Translation2d(-12.758, -14.19), goalPosB2 = new Translation2d(-12.758, 14.19);
     Translation2d goalPosR1 = new Translation2d(12.742, -14.19), goalPosR2 = new Translation2d(12.742,14.19);
     int intakeState = 1;
     boolean flowerMechDown = false;
+
     //the robot should always be facing towards you when relocalizing in the opposite corners,
     //and in the adjacent corners the robot is facing way, so you could that the back of the robot is always facing a driver wall
     public MainTeleop(Gamepad gamepad1, Gamepad gamepad2,
@@ -90,11 +91,9 @@ public class MainTeleop {
 
         // Drive first, with this loop's sticks and heading
         pinpointOdometrySubsystem.update();
-        driveSubsystem.driveFieldCentric(
-                scale(gamepad1.getLeftY()),
-                scale(gamepad1.getLeftX()),
-                scale(gamepad1.getRightX()),
-                pinpointOdometrySubsystem.getPose().getHeading());
+
+        driveSubsystem.driveRobotCentric(scale(gamepad1.getLeftY()), scale(gamepad1.getLeftX()), scale(gamepad1.getRightX()));
+
         driveSubsystem.update();
 
         // Then everything else
@@ -103,7 +102,8 @@ public class MainTeleop {
         intakeSubsystem.update();
 
         opMode.telemetry.addData("Loop (ms)", loopTimer.milliseconds());
-        opMode.telemetry.addData("Heading (deg)", Math.toDegrees(pinpointOdometrySubsystem.getPose().getHeading()));
+        opMode.telemetry.addLine(pinpointOdometrySubsystem.toString());
+
         opMode.telemetry.update();
         loopTimer.reset();
     }
@@ -113,7 +113,7 @@ public class MainTeleop {
 
         commandScheduler.schedule(
                 shooterSubsystem.shooterSetVelocityRunCommand(
-                        () -> (pinpointOdometrySubsystem.getDistanceTo(goalPos)-22),
+                        () -> (pinpointOdometrySubsystem.getDistanceTo(goalPos)),
                         robotHardware.voltageSensor::getVoltage),
                 new RunCommand(() -> {
                     // 0 = intaking, 1 = holding, 2 = shooting, 3 = ejecting
@@ -162,6 +162,7 @@ public class MainTeleop {
                     } else if (gamepad1.wasJustPressed(GamepadKeys.Button.Y)) {
                         pinpointOdometrySubsystem.resetTo(resetPoseBS);
                     }
+
                 })
         );
 

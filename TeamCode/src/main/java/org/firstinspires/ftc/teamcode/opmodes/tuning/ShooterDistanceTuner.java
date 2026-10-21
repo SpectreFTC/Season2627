@@ -8,9 +8,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.geometry.Pose2d;
+import com.seattlesolvers.solverslib.geometry.Rotation2d;
+import com.seattlesolvers.solverslib.geometry.Translation2d;
 
 import org.apache.commons.math3.stat.regression.SimpleRegression;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.MecanumDriveSubsystem;
+import org.firstinspires.ftc.teamcode.commandbase.subsystems.PinpointOdometrySubsystem;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.globals.BulkCache;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
@@ -28,44 +33,58 @@ import java.util.function.Supplier;
  *     velocity  = mVelocity  * distance + bVelocity
  *     hoodAngle = mHoodAngle * distance + bHoodAngle
  * </pre>
- * <p>The shooter runs through {@code ShooterSubsystem.runAtVelocity()} and
- * {@code setHoodAngle()}, the same code used in matches.</p>
+ * <p>The distance comes from Pinpoint odometry, calculated the same way as MainTeleop:
+ * {@code getDistanceTo(goal) - 22}. The robot starts at {@code new Pose2d()} (field
+ * center), so it has to be relocalized at one of MainTeleop's corner poses before
+ * recording. The shooter and intake run through ShooterSubsystem and IntakeSubsystem,
+ * the same code and buttons as MainTeleop, so shots are fed the way they are in
+ * matches.</p>
  *
  * <h2>How to use it</h2>
  * <ol>
- *   <li>Put the robot at a known distance from the goal and set {@code DISTANCE_INCHES}
- *       in FTC Dashboard. Measure it the same way the match code's distance supplier
- *       does (same points on the robot and the goal), or the fit will be off by that
- *       difference.</li>
- *   <li>Adjust velocity (dpad up/down) and hood angle (dpad left/right) and shoot until
- *       shots go in reliably. Shoot only when telemetry says READY.</li>
- *   <li>Press X to record the point. Move to a new distance and repeat. Cover the whole
- *       range you'll shoot from in matches, with at least 3 distances.</li>
+ *   <li>Set {@code BLUE_ALLIANCE} in FTC Dashboard. Put the robot in a corner and press
+ *       that corner's button on gamepad 2 (A, B, X or Y) to relocalize. Pick the goal with
+ *       gamepad 2 dpad right/left, the same as MainTeleop.</li>
+ *   <li>Drive to a shooting spot. Adjust velocity (dpad up/down) and hood angle (dpad
+ *       left/right) and shoot (right trigger) until shots go in reliably. Shoot only when
+ *       telemetry says READY.</li>
+ *   <li>Press X to record the point at the current odometry distance. Move to a new
+ *       distance and repeat. Cover the whole range you'll shoot from in matches, with at
+ *       least 3 distances.</li>
  *   <li>Once there are 2 or more distances, the fit is applied to RobotConstants for this
- *       app session. Press Y to switch to FIT mode and test it at distances you didn't
- *       record.</li>
+ *       app session. Press Y to switch to FIT mode and drive around: the shooter follows
+ *       the fitted lines using the live distance, the same as in a match.</li>
  *   <li>Copy the four numbers into RobotConstants.java to keep them.</li>
  * </ol>
  *
- * <h2>Controls (gamepad 1)</h2>
+ * <h2>Controls</h2>
+ * <p>Gamepad 1:</p>
  * <ul>
- *   <li>Sticks: drive, at DRIVE_SPEED for fine aiming.</li>
- *   <li>Left trigger, left bumper, right bumper: intake, feed and flower, same as Teleop.</li>
+ *   <li>Sticks: drive robot-centric, at DRIVE_SPEED for fine aiming.</li>
+ *   <li>Left trigger: intake. Right trigger: shoot. Left bumper: eject. Right bumper:
+ *       flower up/down. Same as MainTeleop.</li>
  *   <li>Dpad up/down: velocity +/- VELOCITY_STEP. Dpad right/left: hood +/- HOOD_STEP.
  *       Setting VELOCITY or HOOD_ANGLE in Dashboard also works.</li>
  *   <li>A: flywheel on/off. X: record a point. B: delete the last point.
  *       Y: switch between MANUAL and FIT.</li>
  * </ul>
+ * <p>Gamepad 2:</p>
+ * <ul>
+ *   <li>A, B, X, Y: relocalize at RA, RS, BA, BS (the same poses as MainTeleop's
+ *       gamepad 1 A, B, X, Y).</li>
+ *   <li>Dpad right/left: goal on the right (T1) or left (T2), from the driver's view.</li>
+ * </ul>
  * <p>Recorded points are kept until the Robot Controller app restarts, so stopping and
  * restarting this OpMode doesn't lose them. Set {@code CLEAR_POINTS} to true in
- * Dashboard to start over. Each point is also written to the robot log.</p>
+ * Dashboard to start over. Each point is also written to the robot log, with the pose
+ * it was recorded at.</p>
  */
 @Config
 @TeleOp
 public class ShooterDistanceTuner extends OpMode {
 
     // ---- Settings (editable from FTC Dashboard) ----
-    public static double DISTANCE_INCHES = 36;   // measured the same way as the match code's distance
+    public static boolean BLUE_ALLIANCE = true;  // which pair of goals to shoot at
     public static double VELOCITY = 1000;        // ticks/sec; a new value here replaces the dpad value
     public static double HOOD_ANGLE = RobotConstants.hoodServoAngleAtCalibration;  // same units as setHoodAngle()
     public static double VELOCITY_STEP = 20;     // ticks/sec per dpad up/down press
@@ -73,6 +92,23 @@ public class ShooterDistanceTuner extends OpMode {
     public static double READY_TOLERANCE_TPS = 30;  // READY when the speed is this close to the target
     public static double DRIVE_SPEED = 0.5;      // stick scale, so small aiming moves are easy
     public static boolean CLEAR_POINTS = false;  // set true to delete every recorded point
+
+    // Shooter distance = distance to the goal minus this. Must match the "- 22" in
+    // MainTeleop's distance supplier, or the fitted lines will be off by mVelocity * 22.
+    private static final double DISTANCE_OFFSET_INCHES = 0;
+
+    // Same field positions as MainTeleop (inches, field center = 0, 0)
+    private static final Pose2d RESET_RA = new Pose2d(63.182, 69.812, Rotation2d.fromDegrees(-90));
+    private static final Pose2d RESET_RS = new Pose2d(63.182, -69.812, Rotation2d.fromDegrees(-90));
+    private static final Pose2d RESET_BA = new Pose2d(-63.182, -69.812, Rotation2d.fromDegrees(90));
+    private static final Pose2d RESET_BS = new Pose2d(-63.182, 69.812, Rotation2d.fromDegrees(90));
+    private static final Translation2d GOAL_B1 = new Translation2d(-12.758, -14.19);
+    private static final Translation2d GOAL_B2 = new Translation2d(-12.758, 14.19);
+    private static final Translation2d GOAL_R1 = new Translation2d(12.742, -14.19);
+    private static final Translation2d GOAL_R2 = new Translation2d(12.742, 14.19);
+
+    // A new point this close to an earlier one gets a note, in case X was pressed twice
+    private static final double NEAR_INCHES = 2;
 
     // The model in RobotConstants.java when the app started, restored if the fit is cleared
     private static final double FILE_M_VELOCITY = RobotConstants.mVelocity;
@@ -87,7 +123,9 @@ public class ShooterDistanceTuner extends OpMode {
 
     RobotHardware robotHardware;
     ShooterSubsystem shooter;
+    IntakeSubsystem intake;
     MecanumDriveSubsystem drive;
+    PinpointOdometrySubsystem odo;
     MultipleTelemetry multipleTelemetry;
     BulkCache bulkCache;
     ElapsedTime loopTimer;
@@ -97,6 +135,15 @@ public class ShooterDistanceTuner extends OpMode {
     private boolean flywheelOn = true;
     private boolean flowerDown = false;
     private String message = "";
+
+    // ---- Odometry ----
+    // Not static: every run starts at new Pose2d(), so every run has to relocalize
+    private boolean localized = false;
+    private String resetName = "";
+    private boolean rightGoal = true;  // T1, the goal on the right from the driver's view
+    private Pose2d pose = new Pose2d();
+    private double goalDistance;       // straight from getDistanceTo()
+    private double distance;           // goalDistance - DISTANCE_OFFSET_INCHES; what gets recorded
 
     // Manual values, changed by the dpad or by Dashboard
     private double manualVelocity, manualHood;
@@ -111,8 +158,9 @@ public class ShooterDistanceTuner extends OpMode {
     private double hoodSlope, hoodIntercept, hoodR2;
 
     // ---- Button edge detection ----
-    private static final int UP = 0, DOWN = 1, RIGHT = 2, LEFT = 3, A = 4, B = 5, X = 6, Y = 7, RB = 8;
-    private final boolean[] lastButtons = new boolean[9];
+    private static final int UP = 0, DOWN = 1, RIGHT = 2, LEFT = 3, A = 4, B = 5, X = 6, Y = 7, RB = 8,
+            G2_A = 9, G2_B = 10, G2_X = 11, G2_Y = 12, G2_RIGHT = 13, G2_LEFT = 14;
+    private final boolean[] lastButtons = new boolean[15];
 
     @Override
     public void init() {
@@ -123,7 +171,15 @@ public class ShooterDistanceTuner extends OpMode {
 
         robotHardware = RobotHardware.getInstance(this);
         shooter = new ShooterSubsystem(robotHardware.hoodServo, robotHardware.shooterMotor1, robotHardware.shooterMotor2);
+        intake = new IntakeSubsystem(robotHardware);
         drive = new MecanumDriveSubsystem(robotHardware);
+        odo = new PinpointOdometrySubsystem(robotHardware, new Pose2d());
+
+        // Same order as MainTeleop
+        shooter.init();
+        intake.init();
+        drive.init();
+        odo.init();
 
         // After RobotHardware, so its bulk caching mode isn't overwritten
         bulkCache = new BulkCache(hardwareMap);
@@ -140,6 +196,7 @@ public class ShooterDistanceTuner extends OpMode {
         fit();
 
         multipleTelemetry.addLine("Shooter distance tuner. The flywheel spins up on START (A toggles it).");
+        multipleTelemetry.addLine("Relocalize with gamepad 2 A/B/X/Y before recording.");
         multipleTelemetry.addData("Points kept from earlier runs", points.size());
         multipleTelemetry.addLine("Keep hands clear.");
         multipleTelemetry.update();
@@ -167,26 +224,56 @@ public class ShooterDistanceTuner extends OpMode {
         boolean x = pressed(X, gamepad1.x);
         boolean y = pressed(Y, gamepad1.y);
         boolean rightBumper = pressed(RB, gamepad1.right_bumper);
+        boolean g2a = pressed(G2_A, gamepad2.a);
+        boolean g2b = pressed(G2_B, gamepad2.b);
+        boolean g2x = pressed(G2_X, gamepad2.x);
+        boolean g2y = pressed(G2_Y, gamepad2.y);
+        boolean g2Right = pressed(G2_RIGHT, gamepad2.dpad_right);
+        boolean g2Left = pressed(G2_LEFT, gamepad2.dpad_left);
+
+        // ---- Odometry first, so everything below uses this loop's pose ----
+        odo.update();
+        if (g2a) {
+            relocalize(RESET_RA, "RA");
+        } else if (g2b) {
+            relocalize(RESET_RS, "RS");
+        } else if (g2x) {
+            relocalize(RESET_BA, "BA");
+        } else if (g2y) {
+            relocalize(RESET_BS, "BS");
+        }
+        if (g2Right) rightGoal = true;
+        if (g2Left) rightGoal = false;
+
+        // Same as MainTeleop's distance supplier
+        goalDistance = odo.getDistanceTo(currentGoal());
+        distance = goalDistance - DISTANCE_OFFSET_INCHES;
+        pose = odo.getPose();
 
         // ---- Drive, slowed down for aiming ----
         drive.driveRobotCentric(
                 -gamepad1.left_stick_y * DRIVE_SPEED,
                 gamepad1.left_stick_x * DRIVE_SPEED,
                 gamepad1.right_stick_x * DRIVE_SPEED);
+        drive.update();
 
-        // ---- Intake, feed and flower, same as Teleop ----
+        // ---- Intake, same buttons and methods as MainTeleop ----
         if (gamepad1.left_trigger > 0) {
-            robotHardware.intakeMotor.setPower(1);
-            robotHardware.transferMotor.setPower(0);
+            intake.intake();
         } else if (gamepad1.left_bumper) {
-            robotHardware.intakeMotor.setPower(-1);
-            robotHardware.transferMotor.setPower(1);
+            intake.eject();
+        } else if (gamepad1.right_trigger > 0) {
+            intake.shoot();
         } else {
-            robotHardware.intakeMotor.setPower(0);
-            robotHardware.transferMotor.setPower(0);
+            intake.hold();
         }
         if (rightBumper) flowerDown = !flowerDown;
-        robotHardware.flowerServo.setPosition(flowerDown ? 0.5 : 1);
+        if (flowerDown) {
+            intake.flowerIntakeRampDown();
+        } else {
+            intake.flowerIntakeRampUp();
+        }
+        intake.update();
 
         // ---- Manual values: a Dashboard edit replaces them, the dpad steps them ----
         if (VELOCITY != lastDashboardVelocity) {
@@ -221,15 +308,16 @@ public class ShooterDistanceTuner extends OpMode {
 
         // ---- Shooter ----
         if (mode == Mode.FIT) {
-            // Same formula as ShooterSubsystem.shooterSetVelocityRunCommand()
-            targetVelocity = RobotConstants.mVelocity * DISTANCE_INCHES + RobotConstants.bVelocity;
-            targetHood = RobotConstants.mHoodAngle * DISTANCE_INCHES + RobotConstants.bHoodAngle;
+            // Same formula as ShooterSubsystem.shooterSetVelocityRunCommand(), with the live distance
+            targetVelocity = RobotConstants.mVelocity * distance + RobotConstants.bVelocity;
+            targetHood = RobotConstants.mHoodAngle * distance + RobotConstants.bHoodAngle;
         } else {
             targetVelocity = manualVelocity;
             targetHood = manualHood;
         }
         shooter.setHoodAngle(targetHood);
         shooter.runAtVelocity(flywheelOn ? targetVelocity : 0, voltageSupplier);
+        shooter.update();
 
         sendTelemetry(loopMs);
     }
@@ -243,6 +331,25 @@ public class ShooterDistanceTuner extends OpMode {
     }
 
     // ------------------------------------------------------------------
+    // Odometry
+    // ------------------------------------------------------------------
+
+    private void relocalize(Pose2d resetPose, String name) {
+        odo.resetTo(resetPose);
+        localized = true;
+        resetName = name;
+        message = "Relocalized at " + name + ".";
+    }
+
+    /** Same goals as MainTeleop: T1 on the right, T2 on the left, from the driver's view. */
+    private Translation2d currentGoal() {
+        if (BLUE_ALLIANCE) {
+            return rightGoal ? GOAL_B1 : GOAL_B2;
+        }
+        return rightGoal ? GOAL_R1 : GOAL_R2;
+    }
+
+    // ------------------------------------------------------------------
     // Points and fit
     // ------------------------------------------------------------------
 
@@ -251,20 +358,30 @@ public class ShooterDistanceTuner extends OpMode {
             message = "Switch to MANUAL (Y) to record. FIT mode is only for testing the fit.";
             return;
         }
-        boolean duplicate = false;
-        for (ShotPoint p : points) {
-            if (Math.abs(p.distance - DISTANCE_INCHES) < 0.5) duplicate = true;
+        if (!localized) {
+            message = "Not recorded: relocalize first with gamepad 2 A/B/X/Y. The robot starts at "
+                    + "field center, so the distance is wrong until then.";
+            return;
         }
 
-        points.add(new ShotPoint(DISTANCE_INCHES, manualVelocity, manualHood));
-        RobotLog.ii("ShooterDistanceTune", "point %d: distance %.1f in, velocity %.0f tps, hood %.2f",
-                points.size(), DISTANCE_INCHES, manualVelocity, manualHood);
+        ShotPoint near = null;
+        for (ShotPoint p : points) {
+            if (Math.abs(p.distance - distance) < NEAR_INCHES) near = p;
+        }
+
+        points.add(new ShotPoint(distance, manualVelocity, manualHood));
+        RobotLog.ii("ShooterDistanceTune",
+                "point %d: distance %.1f in, velocity %.0f tps, hood %.2f, pose (%.1f, %.1f, %.0f deg), goal %s %s",
+                points.size(), distance, manualVelocity, manualHood,
+                pose.getX(), pose.getY(), Math.toDegrees(pose.getHeading()),
+                BLUE_ALLIANCE ? "blue" : "red", rightGoal ? "T1" : "T2");
         fit();
 
-        message = String.format(Locale.US, "Recorded point %d at %.1f in.", points.size(), DISTANCE_INCHES);
-        if (duplicate) {
-            message += " There was already a point at this distance; both are kept."
-                    + " Did you update DISTANCE_INCHES?";
+        message = String.format(Locale.US, "Recorded point %d at %.1f in.", points.size(), distance);
+        if (near != null) {
+            message += String.format(Locale.US,
+                    " Only %.1f in from an earlier point; both are kept. Press B if that was a double press.",
+                    Math.abs(near.distance - distance));
         }
     }
 
@@ -339,9 +456,16 @@ public class ShooterDistanceTuner extends OpMode {
         multipleTelemetry.addData("Mode", mode == Mode.MANUAL ? "MANUAL (Y for FIT)" : "FIT (Y for MANUAL)");
         multipleTelemetry.addData("Flywheel", !flywheelOn ? "OFF (A to start)"
                 : ready ? "READY" : "spinning up, wait");
-        multipleTelemetry.addData("Distance (in)", DISTANCE_INCHES);
+        multipleTelemetry.addData("Odometry", localized ? "relocalized at " + resetName
+                : "NOT RELOCALIZED: gamepad 2 A/B/X/Y");
+        multipleTelemetry.addData("Goal", "%s %s", BLUE_ALLIANCE ? "blue" : "red",
+                rightGoal ? "right (T1)" : "left (T2)");
+        multipleTelemetry.addData("Pose", "x %.1f  y %.1f  heading %.0f deg",
+                pose.getX(), pose.getY(), Math.toDegrees(pose.getHeading()));
 
         // Plain numbers so they can be graphed in FTC Dashboard
+        multipleTelemetry.addData("Distance (in)", distance);
+        multipleTelemetry.addData("Raw distance to goal (in)", goalDistance);
         multipleTelemetry.addData("Target (tps)", targetVelocity);
         multipleTelemetry.addData("Velocity (tps)", velocity);
         multipleTelemetry.addData("Hood angle", targetHood);
@@ -393,7 +517,7 @@ public class ShooterDistanceTuner extends OpMode {
     // ------------------------------------------------------------------
 
     static class ShotPoint {
-        final double distance;  // inches
+        final double distance;  // inches, after DISTANCE_OFFSET_INCHES, same as the match code
         final double velocity;  // ticks/sec
         final double hood;      // same units as setHoodAngle()
 

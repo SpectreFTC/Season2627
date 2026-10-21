@@ -18,7 +18,7 @@ public class RobotConstants {
     //shooter
     public static double kV = 0.005134;
     public static double kS = 1.1;
-    public static double SHOOTER_kP = 0.089;
+    public static double SHOOTER_kP = 0.096;
     public static double SHOOTER_kI = 0;
     public static double SHOOTER_kD = 0;
     public static double SHOOTER_I_ZONE;
