@@ -27,10 +27,10 @@ public class MecanumDriveSubsystem implements Subsystem {
      * These inputs are rotated into the robot's local coordinate system using the current heading
      * (from odometry), so the robot moves consistently relative to the field regardless of its orientation.
      *
-     * @param xPower     - Desired power around the field's x axis
-     * @param yPower     - Desired power around the field's y axis
-     * @param turnPower  - not needed to change for the robot
-     * @param odoHeading - current odometry heading information in radians
+     * @param xPower     - Desired power around the field's x-axis (axial)
+     * @param yPower     - Desired power around the field's y-axis (lateral)
+     * @param turnPower  - not needed to change for the robot (yaw)
+     * @param odoHeading - current odometry heading information in radians (odoHeading)
      */
     public void driveFieldCentric(double xPower, double yPower, double turnPower, double odoHeading) {
         Translation2d power = new Translation2d(xPower, yPower);

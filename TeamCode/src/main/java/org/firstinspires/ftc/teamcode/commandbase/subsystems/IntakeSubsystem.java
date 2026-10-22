@@ -1,19 +1,20 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
+
 import org.firstinspires.ftc.teamcode.globals.RobotHardware;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
-import org.firstinspires.ftc.teamcode.globals.ServoEx;
 
 
 public class IntakeSubsystem implements Subsystem {
     private final DcMotorEx intakeMotor;
     private final DcMotorEx transferMotor;
-    private final ServoEx flowerServo;
+    private final Servo flowerServo;
     public IntakeSubsystem(RobotHardware robot) {
         this.intakeMotor = robot.intakeMotor;
         this.transferMotor = robot.transferMotor;
-        this.flowerServo = new ServoEx(robot.flowerServo, 180);
+        this.flowerServo =  robot.flowerServo;
     }
     public void setPower(double intakePwr, double transferPwr) {
         intakeMotor.setPower(intakePwr);
@@ -32,12 +33,11 @@ public class IntakeSubsystem implements Subsystem {
     public void eject(){
         setPower(RobotConstants.intakePowerWhileEjecting, RobotConstants.transferPowerWhileEjecting);
     }
-    public void intakeFromFlower() {
-        flowerServo.setAngle(RobotConstants.flowerServoPosDown);
+    public void flowerIntakeRampDown() {
+        flowerServo.setPosition(RobotConstants.flowerServoPosDown);
     }
-
     public void flowerIntakeRampUp() {
-        flowerServo.setAngle(RobotConstants.flowerServoPosUp);
+        flowerServo.setPosition(RobotConstants.flowerServoPosUp);
     }
 
 

@@ -20,7 +20,7 @@ public class RobotHardware {
     public final GoBildaPinpointDriver odo;
     public final VoltageSensor voltageSensor;
 
-    public RobotHardware(OpMode opMode) {
+    private RobotHardware(OpMode opMode) {
         this.opMode = opMode;
         HardwareMap hardwareMap = opMode.hardwareMap;
         leftFront = hardwareMap.get(DcMotorEx.class, "cm1");

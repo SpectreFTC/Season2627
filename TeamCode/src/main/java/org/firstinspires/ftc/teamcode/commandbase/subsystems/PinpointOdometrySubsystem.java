@@ -110,7 +110,9 @@ public class PinpointOdometrySubsystem implements Subsystem{
         driver.update();
     }
     public double getDistanceTo(Translation2d other){
-        Translation2d robot = getPose().getTranslation();
+        Pose2d robotPose = getPose();
+        //this is because pedro-constants reverse y (left) while field is regular y
+        Translation2d robot = new Translation2d(robotPose.getX(), -robotPose.getY());
         return robot.getDistance(other);
     }
 

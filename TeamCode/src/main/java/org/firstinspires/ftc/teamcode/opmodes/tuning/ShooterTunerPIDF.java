@@ -85,6 +85,13 @@ public class ShooterTunerPIDF extends OpMode {
     public static double kF = RobotConstants.kV;          // volts per tick/sec of target, same as kV
     public static double kS = RobotConstants.kS;          // volts to overcome friction, added outside the PIDF
 
+    //Intake and Transfer Powers
+    public static double intakePower = 1.0;
+    public static double transferPower = 1.0;
+
+    //Hood
+    public static double hoodAngle = 0.5;
+
     // ---- Integral limits ----
     public static double I_ZONE_TPS = RobotConstants.SHOOTER_I_ZONE;  // integral cleared beyond this error; 0 = off
     public static double MAX_INTEGRAL_VOLTS = RobotConstants.SHOOTER_MAX_INTEGRAL_VOLTS;  // most volts kI may add
@@ -221,7 +228,21 @@ public class ShooterTunerPIDF extends OpMode {
             power = 0;
             fVolts = sVolts = pVolts = iVolts = dVolts = 0;
         }
+
+        //Intake/Transfer
+        if (gamepad1.b) {
+            robotHardware.intakeMotor.setPower(intakePower);
+            robotHardware.transferMotor.setPower(transferPower);
+        }
+        else {
+            robotHardware.intakeMotor.setPower(0);
+            robotHardware.transferMotor.setPower(0);
+        }
+
+        robotHardware.hoodServo.setPosition(hoodAngle);
+
         setShooterPower(power);
+
 
         sendTelemetry(loopMs);
     }
