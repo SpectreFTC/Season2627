@@ -36,23 +36,19 @@ public class MainTeleop {
     public final MecanumDriveSubsystem driveSubsystem;
     public final PinpointOdometrySubsystem pinpointOdometrySubsystem;
     public final CommandScheduler commandScheduler;
-    Pose2d pos1;
-    Pose2d pos2;
-    Pose2d pos3;
-    Pose2d pos4;
-    Translation2d goalPos;
-
+    Pose2d resetPose, resetPose1, resetPose2, resetPose3;
+    Translation2d goalPos, goalPosT1, goalPosT2, goalPosB1, goalPosB2, goalPosR1, goalPosR2;
     int intakeState = 0;
-    //the robot should always be facing parallel but away from you and should be relocalized in the corner
-    Pose2d resetPose;
-
+    boolean flowerMechDown = false;
+    //the robot should always be facing towards you when relocalizing in any corner
     public MainTeleop(Gamepad gamepad1, Gamepad gamepad2,
                       OpMode opMode,
                       ShooterSubsystem shooterSubsystem,
                       IntakeSubsystem intakeSubsystem,
                       MecanumDriveSubsystem driveSubsystem,
                       PinpointOdometrySubsystem pinpointOdometrySubsystem,
-                      CommandScheduler commandScheduler
+                      CommandScheduler commandScheduler,
+                      boolean isBlue
     ){
        this.gamepad1 = new GamepadEx(gamepad1);
        this.gamepad2 = new GamepadEx(gamepad2);
@@ -69,6 +65,13 @@ public class MainTeleop {
        subsystems.add(this.driveSubsystem);
        subsystems.add(this.pinpointOdometrySubsystem);
        this.commandScheduler = commandScheduler;
+       if(isBlue){
+         goalPosT1 = goalPosB1;
+         goalPosT2 = goalPosB2;
+       }else{
+         goalPosT1 = goalPosR1;
+         goalPosT2 = goalPosR2;
+       }
     }
     public static double scale(float v){
         return Math.signum(v)*Math.sqrt(Math.abs(v));
@@ -96,12 +99,15 @@ public class MainTeleop {
                 }else{
                     intakeState = 1;
                 }
+                if(gamepad1.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)){
+                   flowerMechDown = !flowerMechDown;
+                }
                 //drivers view
                 if(gamepad2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
-                    goalPos =  new Translation2d(); // hive on right side
+                    goalPos = goalPosT1; // hive on right side
                 }
                 if(gamepad2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)){
-                    goalPos = new Translation2d(); // hive on left side
+                    goalPos = goalPosT2; // hive on left side
                 }
 
             }),
@@ -118,16 +124,19 @@ public class MainTeleop {
                     new ConditionalCommand(new InstantCommand(intakeSubsystem::eject), new InstantCommand(), ()->intakeState==3)
             ),
             new RepeatCommand(
-                    new ConditionalCommand(new InstantCommand(()->pinpointOdometrySubsystem.resetTo(pos1)), new InstantCommand(), ()-> gamepad1.wasJustPressed(GamepadKeys.Button.A))
+                    new ConditionalCommand(new InstantCommand(()->pinpointOdometrySubsystem.resetTo(resetPose)), new InstantCommand(), ()-> gamepad1.wasJustPressed(GamepadKeys.Button.A))
             ),
             new RepeatCommand(
-                    new ConditionalCommand(new InstantCommand(()->pinpointOdometrySubsystem.resetTo(pos2)), new InstantCommand(), ()-> gamepad1.wasJustPressed(GamepadKeys.Button.B))
+                    new ConditionalCommand(new InstantCommand(()->pinpointOdometrySubsystem.resetTo(resetPose1)), new InstantCommand(), ()-> gamepad1.wasJustPressed(GamepadKeys.Button.B))
             ),
             new RepeatCommand(
-                    new ConditionalCommand(new InstantCommand(()->pinpointOdometrySubsystem.resetTo(pos3)), new InstantCommand(), ()-> gamepad1.wasJustPressed(GamepadKeys.Button.X))
+                    new ConditionalCommand(new InstantCommand(()->pinpointOdometrySubsystem.resetTo(resetPose2)), new InstantCommand(), ()-> gamepad1.wasJustPressed(GamepadKeys.Button.X))
             ),
             new RepeatCommand(
-                    new ConditionalCommand(new InstantCommand(()->pinpointOdometrySubsystem.resetTo(pos4)), new InstantCommand(), ()-> gamepad1.wasJustPressed(GamepadKeys.Button.Y))
+                    new ConditionalCommand(new InstantCommand(()->pinpointOdometrySubsystem.resetTo(resetPose3)), new InstantCommand(), ()-> gamepad1.wasJustPressed(GamepadKeys.Button.Y))
+            ),
+            new RepeatCommand(
+                    new ConditionalCommand(new InstantCommand(intakeSubsystem::intakeFromFlower), new InstantCommand(intakeSubsystem::flowerIntakeRampUp), ()-> flowerMechDown)
             )
         );
         for (Subsystem subsystem : subsystems) {

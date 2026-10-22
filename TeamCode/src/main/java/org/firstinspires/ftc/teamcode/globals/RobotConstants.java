@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 
 @Config
 public class RobotConstants {
+    //intake
     public static double intakePowerWhileIntaking;
     public static double transferPowerWhileIntaking;
     public static double intakePowerWhileEjecting;
@@ -14,12 +15,14 @@ public class RobotConstants {
     public static double transferPowerWhileShooting;
     public static double flowerServoPosDown;
     public static double flowerServoPosUp;
-    public static double kV = 0.0054145840;
-    public static double kS = 2.209248;
-    public static double SHOOTER_kP = 0.00102403;
-    public static double SHOOTER_kI = 0.000646055;
-    public static double SHOOTER_kD = 0.0;
-    public static double SHOOTER_INTEGRAL_BOUND = 3095.7;
+    //shooter
+    public static double kV = 0.005134;
+    public static double kS = 1.1;
+    public static double SHOOTER_kP = 0.015;
+    public static double SHOOTER_kI = 0;
+    public static double SHOOTER_kD = 0;
+    public static double SHOOTER_I_ZONE;
+    public static double SHOOTER_MAX_INTEGRAL_VOLTS;
     public static double mVelocity;
     public static double bVelocity;
     public static double mHoodAngle;
@@ -27,8 +30,5 @@ public class RobotConstants {
     public static double hoodServoRange;
     public static double hoodServoPositionAtCalibration;
     public static double hoodServoAngleAtCalibration;
-    public static double flowerServoRange;
-    public static double hoodServoPos = 1;
-    public static double power = 0.5;
-    public static double inttranpower = 0.5;
+    public static double SHOOTER_DECAY_FACTOR = 1;
 }
