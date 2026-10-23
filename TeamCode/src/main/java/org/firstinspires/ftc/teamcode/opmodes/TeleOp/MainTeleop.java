@@ -121,7 +121,7 @@ public class MainTeleop {
                         intakeState = 0;
                     } else if (gamepad1.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
                         intakeState = 3;
-                    } else if (gamepad2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0) {
+                    } else if (gamepad1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0) {
                         intakeState = 2;
                     } else {
                         intakeState = 1;
