@@ -113,7 +113,7 @@ public class MainTeleop {
 
         commandScheduler.schedule(
                 shooterSubsystem.shooterSetVelocityRunCommand(
-                        () -> pinpointOdometrySubsystem.getDistanceTo(goalPos),
+                        () -> (pinpointOdometrySubsystem.getDistanceTo(goalPos)-22),
                         robotHardware.voltageSensor::getVoltage),
                 new RunCommand(() -> {
                     // 0 = intaking, 1 = holding, 2 = shooting, 3 = ejecting

@@ -34,8 +34,8 @@ public class MecanumDriveSubsystem implements Subsystem {
      */
     public void driveFieldCentric(double xPower, double yPower, double turnPower, double odoHeading) {
         Translation2d power = new Translation2d(xPower, yPower);
-        double strafe = power.rotateBy(new Rotation2d(-odoHeading)).getY();
-        double forward = power.rotateBy(new Rotation2d(-odoHeading)).getX();
+        double strafe = power.rotateBy(new Rotation2d(odoHeading)).getY();
+        double forward = power.rotateBy(new Rotation2d(odoHeading)).getX();
         driveRobotCentric(forward, strafe, turnPower);
     }
 
