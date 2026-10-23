@@ -2,10 +2,8 @@ package org.firstinspires.ftc.teamcode.opmodes.TeleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.command.ConditionalCommand;
-import com.seattlesolvers.solverslib.command.InstantCommand;
-import com.seattlesolvers.solverslib.command.RepeatCommand;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
@@ -79,18 +77,35 @@ public class MainTeleop {
          goalPosT2 = goalPosR2;
        }
     }
-    public static double scale(float v){
+    private final ElapsedTime loopTimer = new ElapsedTime();
+
+    public static double scale(double v){
         return Math.signum(v)*Math.sqrt(Math.abs(v));
     }
+
     public void loop(){
         bulkCache.clearCache();
         gamepad1.readButtons();
         gamepad2.readButtons();
+
+        // Drive first, with this loop's sticks and heading
+        pinpointOdometrySubsystem.update();
+        driveSubsystem.driveFieldCentric(
+                scale(gamepad1.getLeftY()),
+                scale(gamepad1.getLeftX()),
+                scale(gamepad1.getRightX()),
+                pinpointOdometrySubsystem.getPose().getHeading());
+        driveSubsystem.update();
+
+        // Then everything else
         commandScheduler.run();
-        for (Subsystem subsystem : subsystems) {
-            subsystem.update();
-        }
-        driveSubsystem.driveFieldCentric(gamepad1.getLeftY(), gamepad1.getLeftX(), gamepad1.getRightX(), pinpointOdometrySubsystem.getPose().getHeading());
+        shooterSubsystem.update();
+        intakeSubsystem.update();
+
+        opMode.telemetry.addData("Loop (ms)", loopTimer.milliseconds());
+        opMode.telemetry.addData("Heading (deg)", Math.toDegrees(pinpointOdometrySubsystem.getPose().getHeading()));
+        opMode.telemetry.update();
+        loopTimer.reset();
     }
 
     public void init(){
