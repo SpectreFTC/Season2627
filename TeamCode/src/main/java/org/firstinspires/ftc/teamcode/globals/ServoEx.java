@@ -99,6 +99,17 @@ public class ServoEx {
         }
         return false;
     }
+    public boolean setAngle(double degrees, double maxServoPos) {
+        if (degrees >= MINIMUM_ALLOWED_ANGLE && degrees <= MAXIMUM_ALLOWED_ANGLE) {
+            double targetServoPosition = scale(degrees, MINIMUM_ALLOWED_ANGLE, MAXIMUM_ALLOWED_ANGLE, 0, 1);
+            if(targetServoPosition <= maxServoPos){
+                servo.setPosition(targetServoPosition);
+            }
+            this.angle = degrees;
+            return true;
+        }
+        return false;
+    }
 
 
     /**

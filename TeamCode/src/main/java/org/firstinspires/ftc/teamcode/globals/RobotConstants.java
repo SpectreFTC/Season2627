@@ -31,4 +31,5 @@ public class RobotConstants {
     public static double hoodServoPositionAtCalibration = 0.16;
     public static double hoodServoAngleAtCalibration = 5.252703;
     public static double SHOOTER_DECAY_FACTOR = 1;
+    public static double maxServoPos = 0.89;
 }

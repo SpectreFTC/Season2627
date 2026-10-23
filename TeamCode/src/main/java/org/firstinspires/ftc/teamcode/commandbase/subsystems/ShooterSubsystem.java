@@ -15,6 +15,7 @@ import static org.firstinspires.ftc.teamcode.globals.RobotConstants.kS;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.kV;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.mHoodAngle;
 import static org.firstinspires.ftc.teamcode.globals.RobotConstants.mVelocity;
+import static org.firstinspires.ftc.teamcode.globals.RobotConstants.maxServoPos;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -177,7 +178,7 @@ public class ShooterSubsystem implements Subsystem {
     }
 
     public void setHoodAngle(double angle) {
-        hoodServo.setAngle(angle);
+        hoodServo.setAngle(angle, maxServoPos);
     }
 
     public double getVelocity() {
