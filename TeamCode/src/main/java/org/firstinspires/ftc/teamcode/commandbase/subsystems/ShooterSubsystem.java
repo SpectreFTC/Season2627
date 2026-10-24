@@ -95,13 +95,18 @@ public class ShooterSubsystem implements Subsystem {
     /**
      * @param distanceSupplier supplier for distance (inches)
      * @param voltageSupplier  battery voltage in volts (only called every 50 ms)
+     * @param isStopped        checked every loop; true stops the flywheel, the hood still tracks distance
      * @return a RunCommand that runs the shooter and hood for the given distance
      */
-    public Command shooterSetVelocityRunCommand(Supplier<Double> distanceSupplier, Supplier<Double> voltageSupplier) {
+    public Command shooterSetVelocityRunCommand(Supplier<Double> distanceSupplier, Supplier<Double> voltageSupplier, Supplier<Boolean> isStopped) {
         return new RunCommand(() -> {
             double distance = distanceSupplier.get();
             setHoodAngle(mHoodAngle * distance + bHoodAngle);
-            runAtVelocity(mVelocity * distance + bVelocity, voltageSupplier);
+            if (isStopped.get()) {
+                stop();
+            } else {
+                runAtVelocity(mVelocity * distance + bVelocity, voltageSupplier);
+            }
         });
     }
 
@@ -166,6 +171,7 @@ public class ShooterSubsystem implements Subsystem {
         lastVelocity = velocity;
         lastTargetVelocity = targetVelocity;
         lastPower = power;
+
     }
 
     public void stop() {

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.tuning;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -74,6 +75,7 @@ import java.util.Locale;
  * <p>Dashboard edits only last until the app restarts. Copy the final numbers into
  * RobotConstants.java to keep them.</p>
  */
+@Disabled
 @Config
 @TeleOp
 public class ShooterTunerPIDF extends OpMode {
@@ -87,10 +89,10 @@ public class ShooterTunerPIDF extends OpMode {
 
     //Intake and Transfer Powers
     public static double intakePower = 1.0;
-    public static double transferPower = 1.0;
+    public static double transferPower = -1.0;
 
     //Hood
-    public static double hoodAngle = 0.5;
+    public static double hoodAngle = 0.8;
 
     // ---- Integral limits ----
     public static double I_ZONE_TPS = RobotConstants.SHOOTER_I_ZONE;  // integral cleared beyond this error; 0 = off
@@ -98,9 +100,9 @@ public class ShooterTunerPIDF extends OpMode {
     public static double DECAY_FACTOR = 1.0;  // 1 = off; below 1 shrinks an integral pointing the wrong way
 
     // ---- Target ----
-    public static boolean ALTERNATE = true;     // true: LOW <-> HIGH every STEP_SECONDS; false: hold HIGH
-    public static double LOW_VELOCITY = 600;    // ticks/sec
-    public static double HIGH_VELOCITY = 1200;  // ticks/sec
+    public static boolean ALTERNATE = false;     // true: LOW <-> HIGH every STEP_SECONDS; false: hold HIGH
+    public static double LOW_VELOCITY = 735;    // ticks/sec
+    public static double HIGH_VELOCITY = 735;  // ticks/sec
     public static double STEP_SECONDS = 4.0;
 
     public static double VOLTAGE_READ_MS = 50;

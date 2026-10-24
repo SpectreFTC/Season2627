@@ -17,7 +17,9 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.PinpointOdometrySub
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.Subsystem;
 import org.firstinspires.ftc.teamcode.globals.BulkCache;
+import org.firstinspires.ftc.teamcode.globals.RobotConstants;
 import org.firstinspires.ftc.teamcode.globals.RobotHardware;
+import org.firstinspires.ftc.teamcode.globals.RobotUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,18 +34,17 @@ public class MainTeleop {
     public final ShooterSubsystem shooterSubsystem;
     public final IntakeSubsystem intakeSubsystem;
     public final MecanumDriveSubsystem driveSubsystem;
-    public final PinpointOdometrySubsystem pinpointOdometrySubsystem;
     public final CommandScheduler commandScheduler;
-    Pose2d resetPoseRA = new Pose2d(63.182, 69.812, Rotation2d.fromDegrees(-90)),
-            resetPoseRS = new Pose2d(63.812, -69.812, Rotation2d.fromDegrees(-90)),
-            resetPoseBS = new Pose2d(-63.182, 69.812, Rotation2d.fromDegrees(90)),
-            resetPoseBA = new Pose2d(-69.7, -54.7, Rotation2d.fromDegrees(90));
-    Translation2d goalPos = new Translation2d(), goalPosT1, goalPosT2;
-    Translation2d goalPosB1 = new Translation2d(-12.758, -14.19), goalPosB2 = new Translation2d(-12.758, 14.19);
-    Translation2d goalPosR1 = new Translation2d(12.742, -14.19), goalPosR2 = new Translation2d(12.742,14.19);
+//    Pose2d resetPoseRA = new Pose2d(63.182, -69.812, Rotation2d.fromDegrees(-90)),
+//            resetPoseRS = new Pose2d(63.812, 69.812, Rotation2d.fromDegrees(-90)),
+//            resetPoseBS = new Pose2d(-63.182, 69.812, Rotation2d.fromDegrees(90)),
+//            resetPoseBA = new Pose2d(-69.7, -54.7, Rotation2d.fromDegrees(90));
+//    Translation2d goalPos = new Translation2d(), goalPosTS, goalPosTA;
+//    Translation2d goalPosBS = new Translation2d(-12.758, 14.19), goalPosBA = new Translation2d(-12.758, -14.19);
+//    Translation2d goalPosRS = new Translation2d(12.742, 14.19), goalPosRA = new Translation2d(12.742,-14.19);
     int intakeState = 1;
     boolean flowerMechDown = false;
-
+    boolean isFlyWheelStopped = false;
     //the robot should always be facing towards you when relocalizing in the opposite corners,
     //and in the adjacent corners the robot is facing way, so you could that the back of the robot is always facing a driver wall
     public MainTeleop(Gamepad gamepad1, Gamepad gamepad2,
@@ -64,19 +65,17 @@ public class MainTeleop {
        this.shooterSubsystem = shooterSubsystem;
        this.intakeSubsystem = intakeSubsystem;
        this.driveSubsystem = driveSubsystem;
-       this.pinpointOdometrySubsystem = pinpointOdometrySubsystem;
        subsystems.add(this.shooterSubsystem);
        subsystems.add(this.intakeSubsystem);
        subsystems.add(this.driveSubsystem);
-       subsystems.add(this.pinpointOdometrySubsystem);
        this.commandScheduler = commandScheduler;
-       if(isBlue){
-         goalPosT1 = goalPosB1;
-         goalPosT2 = goalPosB2;
-       }else{
-         goalPosT1 = goalPosR1;
-         goalPosT2 = goalPosR2;
-       }
+//       if(isBlue){
+//         goalPosTS = goalPosBS;
+//         goalPosTA = goalPosBA;
+//       }else{
+//         goalPosTS = goalPosRS;
+//         goalPosTA = goalPosRA;
+//       }
     }
     private final ElapsedTime loopTimer = new ElapsedTime();
 
@@ -89,10 +88,7 @@ public class MainTeleop {
         gamepad1.readButtons();
         gamepad2.readButtons();
 
-        // Drive first, with this loop's sticks and heading
-        pinpointOdometrySubsystem.update();
-
-        driveSubsystem.driveRobotCentric(scale(gamepad1.getLeftY()), scale(gamepad1.getLeftX()), scale(gamepad1.getRightX()));
+        driveSubsystem.driveRobotCentric(scale(gamepad1.getLeftY()), scale(gamepad1.getLeftX()), 0.5*scale(gamepad1.getRightX()));
 
         driveSubsystem.update();
 
@@ -102,8 +98,10 @@ public class MainTeleop {
         intakeSubsystem.update();
 
         opMode.telemetry.addData("Loop (ms)", loopTimer.milliseconds());
-        opMode.telemetry.addLine(pinpointOdometrySubsystem.toString());
-
+        opMode.telemetry.addData("velo", shooterSubsystem.getVelocity());
+//        opMode.telemetry.addData("goalPosX", goalPos.getX());
+//        opMode.telemetry.addData("goalPosY", goalPos.getY());
+//        opMode.telemetry.addData("distance",pinpointOdometrySubsystem.getDistanceTo(goalPos));
         opMode.telemetry.update();
         loopTimer.reset();
     }
@@ -112,16 +110,16 @@ public class MainTeleop {
         commandScheduler.reset();
 
         commandScheduler.schedule(
-                shooterSubsystem.shooterSetVelocityRunCommand(
-                        () -> (pinpointOdometrySubsystem.getDistanceTo(goalPos)),
-                        robotHardware.voltageSensor::getVoltage),
                 new RunCommand(() -> {
                     // 0 = intaking, 1 = holding, 2 = shooting, 3 = ejecting
                     if (gamepad1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0) {
                         intakeState = 0;
                     } else if (gamepad1.isDown(GamepadKeys.Button.LEFT_BUMPER)) {
                         intakeState = 3;
-                    } else if (gamepad1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0) {
+                    } else if (gamepad1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0 && RobotUtils.isWithinRange(
+                            shooterSubsystem.getVelocity(),
+                            RobotConstants.setVelocity - RobotConstants.threshold,
+                            RobotConstants.setVelocity + RobotConstants.threshold)) {
                         intakeState = 2;
                     } else {
                         intakeState = 1;
@@ -144,25 +142,29 @@ public class MainTeleop {
                         intakeSubsystem.flowerIntakeRampUp();
                     }
 
-                    // Goal, from the driver's view
-                    if (gamepad2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-                        goalPos = goalPosT1; // hive on right side
-                    }
-                    if (gamepad2.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
-                        goalPos = goalPosT2; // hive on left side
-                    }
+//                    // Goal, from the driver's view
+//                    if (gamepad1.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
+//                        goalPos = goalPosTS; // hive on right side
+//                    }
+//                    if (gamepad1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
+//                        goalPos = goalPosTA; // hive on left side
+//                    }
 
-                    // Relocalize
-                    if (gamepad1.wasJustPressed(GamepadKeys.Button.A)) {
-                        pinpointOdometrySubsystem.resetTo(resetPoseRA);
-                    } else if (gamepad1.wasJustPressed(GamepadKeys.Button.B)) {
-                        pinpointOdometrySubsystem.resetTo(resetPoseRS);
-                    } else if (gamepad1.wasJustPressed(GamepadKeys.Button.X)) {
-                        pinpointOdometrySubsystem.resetTo(resetPoseBA);
-                    } else if (gamepad1.wasJustPressed(GamepadKeys.Button.Y)) {
-                        pinpointOdometrySubsystem.resetTo(resetPoseBS);
+//                    // Relocalize
+//                    if (gamepad1.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
+//                        pinpointOdometrySubsystem.resetTo(resetPoseRA);
+//                    } else if (gamepad1.wasJustPressed(GamepadKeys.Button.B)) {
+//                        pinpointOdometrySubsystem.resetTo(resetPoseRS);
+//                    } else if (gamepad1.wasJustPressed(GamepadKeys.Button.X)) {
+//                        pinpointOdometrySubsystem.resetTo(resetPoseBA);
+//                    } else if (gamepad1.wasJustPressed(GamepadKeys.Button.Y)) {
+//                        pinpointOdometrySubsystem.resetTo(resetPoseBS);
+//                    }
+                    if(gamepad1.wasJustPressed(GamepadKeys.Button.A)){
+                        isFlyWheelStopped = !isFlyWheelStopped;
                     }
-
+                    shooterSubsystem.runAtVelocity(RobotConstants.setVelocity, robotHardware.voltageSensor::getVoltage);
+                    shooterSubsystem.setHoodAngle(RobotConstants.setHoodAngle);
                 })
         );
 

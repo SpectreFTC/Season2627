@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.tuning;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -79,6 +80,7 @@ import java.util.function.Supplier;
  * Dashboard to start over. Each point is also written to the robot log, with the pose
  * it was recorded at.</p>
  */
+@Disabled
 @Config
 @TeleOp
 public class ShooterDistanceTuner extends OpMode {
@@ -98,14 +100,12 @@ public class ShooterDistanceTuner extends OpMode {
     private static final double DISTANCE_OFFSET_INCHES = 0;
 
     // Same field positions as MainTeleop (inches, field center = 0, 0)
-    private static final Pose2d RESET_RA = new Pose2d(63.182, 69.812, Rotation2d.fromDegrees(-90));
-    private static final Pose2d RESET_RS = new Pose2d(63.182, -69.812, Rotation2d.fromDegrees(-90));
-    private static final Pose2d RESET_BA = new Pose2d(-63.182, -69.812, Rotation2d.fromDegrees(90));
-    private static final Pose2d RESET_BS = new Pose2d(-63.182, 69.812, Rotation2d.fromDegrees(90));
-    private static final Translation2d GOAL_B1 = new Translation2d(-12.758, -14.19);
-    private static final Translation2d GOAL_B2 = new Translation2d(-12.758, 14.19);
-    private static final Translation2d GOAL_R1 = new Translation2d(12.742, -14.19);
-    private static final Translation2d GOAL_R2 = new Translation2d(12.742, 14.19);
+    Pose2d RESET_RA = new Pose2d(63.182, -69.812, Rotation2d.fromDegrees(-90)),
+            RESET_RS = new Pose2d(63.812, 69.812, Rotation2d.fromDegrees(-90)),
+            RESET_BS = new Pose2d(-63.182, 69.812, Rotation2d.fromDegrees(90)),
+            RESET_BA = new Pose2d(-69.7, -54.7, Rotation2d.fromDegrees(90));
+    Translation2d goalPosBS = new Translation2d(-12.758, 14.19), goalPosBA = new Translation2d(-12.758, -14.19);
+    Translation2d goalPosRS = new Translation2d(12.742, 14.19), goalPosRA = new Translation2d(12.742,-14.19);
 
     // A new point this close to an earlier one gets a note, in case X was pressed twice
     private static final double NEAR_INCHES = 2;
@@ -344,9 +344,9 @@ public class ShooterDistanceTuner extends OpMode {
     /** Same goals as MainTeleop: T1 on the right, T2 on the left, from the driver's view. */
     private Translation2d currentGoal() {
         if (BLUE_ALLIANCE) {
-            return rightGoal ? GOAL_B1 : GOAL_B2;
+            return rightGoal ? goalPosBS : goalPosBA;
         }
-        return rightGoal ? GOAL_R1 : GOAL_R2;
+        return rightGoal ? goalPosRS : goalPosRA;
     }
 
     // ------------------------------------------------------------------

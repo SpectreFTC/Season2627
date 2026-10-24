@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.tuning;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.geometry.Pose2d;
@@ -12,7 +13,7 @@ import com.seattlesolvers.solverslib.geometry.Translation2d;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.PinpointOdometrySubsystem;
 import org.firstinspires.ftc.teamcode.globals.BulkCache;
 import org.firstinspires.ftc.teamcode.globals.RobotHardware;
-
+@Disabled
 @Config
 @TeleOp
 public class PinpointTest extends OpMode {
