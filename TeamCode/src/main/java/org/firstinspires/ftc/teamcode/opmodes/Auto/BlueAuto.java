@@ -65,7 +65,8 @@ public class BlueAuto extends OpMode {
                     new InstantCommand(intakeSubsystem::shoot),
                     new WaitCommand(2000),
                     new InstantCommand(intakeSubsystem::hold),
-                    new FollowPathCommand(follower, Paths.path(path1(), path2()))
+                    new FollowPathCommand(follower, Paths.path(path1(), path2())),
+                    new InstantCommand(intakeSubsystem::flowerIntakeRampDown)
                 )
 
         );
@@ -77,5 +78,8 @@ public class BlueAuto extends OpMode {
         follower.update();
     }
 
-
+    @Override
+    public void stop() {
+        RobotConstants.bluePoseStorage = follower.pose();
+    }
 }

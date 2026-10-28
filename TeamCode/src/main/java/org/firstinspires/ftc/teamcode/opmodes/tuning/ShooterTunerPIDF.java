@@ -75,7 +75,6 @@ import java.util.Locale;
  * <p>Dashboard edits only last until the app restarts. Copy the final numbers into
  * RobotConstants.java to keep them.</p>
  */
-@Disabled
 @Config
 @TeleOp
 public class ShooterTunerPIDF extends OpMode {

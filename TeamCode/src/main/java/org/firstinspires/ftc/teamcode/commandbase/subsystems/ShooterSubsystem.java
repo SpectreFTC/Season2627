@@ -27,7 +27,9 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 
+import org.apache.commons.collections4.list.AbstractLinkedListJava21;
 import org.firstinspires.ftc.teamcode.globals.ServoEx;
+import org.firstinspires.ftc.teamcode.globals.ShotTable;
 
 import java.util.function.Supplier;
 
@@ -101,11 +103,11 @@ public class ShooterSubsystem implements Subsystem {
     public Command shooterSetVelocityRunCommand(Supplier<Double> distanceSupplier, Supplier<Double> voltageSupplier, Supplier<Boolean> isStopped) {
         return new RunCommand(() -> {
             double distance = distanceSupplier.get();
-            setHoodAngle(mHoodAngle * distance + bHoodAngle);
+            setHoodAngle(ShotTable.hoodAngle(distance));
             if (isStopped.get()) {
                 stop();
             } else {
-                runAtVelocity(mVelocity * distance + bVelocity, voltageSupplier);
+                runAtVelocity(ShotTable.velocity(distance), voltageSupplier);
             }
         });
     }

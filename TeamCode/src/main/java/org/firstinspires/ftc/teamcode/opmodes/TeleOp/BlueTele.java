@@ -31,7 +31,7 @@ public class BlueTele extends OpMode {
        drive = new MecanumDriveSubsystem(robotHardware);
        odo = new PinpointOdometrySubsystem(robotHardware, new Pose2d());
        commandScheduler = CommandScheduler.getInstance();
-       tele = new MainTeleop(gamepad1, gamepad2, this, shooter, intake, drive, odo, commandScheduler, true);
+       tele = new MainTeleop(gamepad1, gamepad2, this, shooter, intake, true);
        tele.init();
     }
 
