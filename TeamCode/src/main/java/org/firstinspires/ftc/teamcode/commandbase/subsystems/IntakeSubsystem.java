@@ -1,49 +1,55 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems;
 
-import com.seattlesolvers.solverslib.command.SubsystemBase;
-import com.seattlesolvers.solverslib.controller.PIDFController;
-import com.seattlesolvers.solverslib.hardware.motors.Motor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.globals.RobotHardware;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
 
 
-public class IntakeSubsystem extends SubsystemBase {
-    private final RobotHardware robot;
-
-    private PIDFController intakeController;
-
+public class IntakeSubsystem implements Subsystem {
+    private final DcMotorEx intakeMotor;
+    private final DcMotorEx transferMotor;
+    private final Servo flowerServo;
     public IntakeSubsystem(RobotHardware robot) {
-        this.robot = robot;
-
-        robot.intakeMotor.setInverted(false);
-        robot.intakeServo.setInverted(false);
-
-        robot.intakeMotor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
-
-        intakeController = new PIDFController(RobotConstants.intakePIDFCoefficients);
+        this.intakeMotor = robot.intakeMotor;
+        this.transferMotor = robot.transferMotor;
+        this.flowerServo =  robot.flowerServo;
     }
-
-    public void setPower(double power) {
-        robot.intakeMotor.set(power);
+    public void setPower(double intakePwr, double transferPwr) {
+        intakeMotor.setPower(intakePwr);
+        transferMotor.setPower(transferPwr);
     }
 
     public void intake() {
-        setPower(RobotConstants.intakePower);
+        setPower(RobotConstants.intakePowerWhileIntaking, RobotConstants.transferPowerWhileIntaking);
+    }
+    public void hold(){
+        setPower(RobotConstants.intakePowerWhileHolding, RobotConstants.transferPowerWhileHolding);
+    }
+    public void shoot(){
+        setPower(RobotConstants.intakePowerWhileShooting, RobotConstants.transferPowerWhileShooting);
+    }
+    public void eject(){
+        setPower(RobotConstants.intakePowerWhileEjecting, RobotConstants.transferPowerWhileEjecting);
+    }
+    public void flowerIntakeRampDown() {
+        flowerServo.setPosition(RobotConstants.flowerServoPosDown);
+    }
+    public void flowerIntakeRampUp() {
+        flowerServo.setPosition(RobotConstants.flowerServoPosUp);
     }
 
-    public void rampUp(){
-        robot.intakeServo.set(RobotConstants.servoUpPos);
+
+    @Override
+    public void update() {
+
     }
 
-    public void rampDown() {
-        robot.intakeServo.set(RobotConstants.servoDownPos);
-    }
-    public void setVelocity(double setpoint) {
-        robot.intakeMotor.set(intakeController.calculate(setpoint));
-        //Method must be called each cycle (.calculate() needs to be called each cycle)
-    }
+    @Override
+    public void init() {
 
+    }
 }
 
 

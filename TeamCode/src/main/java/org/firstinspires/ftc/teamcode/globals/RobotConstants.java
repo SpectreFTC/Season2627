@@ -1,24 +1,38 @@
 package org.firstinspires.ftc.teamcode.globals;
 
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.seattlesolvers.solverslib.geometry.Pose2d;
+import com.acmerobotics.dashboard.config.Config;
 
+@Config
 public class RobotConstants {
-
-    public enum HiveState { NOT_VISIBLE, LEVEL, UP, DOWN }
-
-    //TODO: Tune these vals, add more servo positions if needed
-    public static double intakePower = 0.55;
-    public static double servoUpPos = 0.8;
-    public static double servoDownPos = 0.2;
-    public static double hiveHeightUp = 51.0;
-    public static double hiveHeightDown = 37.0;
-    public static double cameraHeightIn = 9.86;
-    public static double cameraAngle = 32.37;
-    public static double cameraForwardOffsetIn = -6.32;
-    public static double cameraLeftOffsetIn = 0.0;
-
-    public static PIDFCoefficients intakePIDFCoefficients = new PIDFCoefficients(0.0, 0.0, 0.0, 0.0);
-
-
+    //intake
+    public static double intakePowerWhileIntaking = 1;
+    public static double transferPowerWhileIntaking = 0.3;
+    public static double intakePowerWhileEjecting = -1;
+    public static double transferPowerWhileEjecting = 1;
+    public static double intakePowerWhileHolding = 0.2;
+    public static double transferPowerWhileHolding = 0.1;
+    public static double intakePowerWhileShooting = 1;
+    public static double transferPowerWhileShooting = -0.7;
+    public static double flowerServoPosDown = 0.5;
+    public static double flowerServoPosUp = 1;
+    //shooter
+    public static double kV = 0.005134;
+    public static double kS = 1.1;
+    public static double SHOOTER_kP = 0.078;
+    public static double SHOOTER_kI = 0;
+    public static double SHOOTER_kD = 0;
+    public static double SHOOTER_I_ZONE;
+    public static double SHOOTER_MAX_INTEGRAL_VOLTS;
+    public static double mVelocity = 0.645201;
+    public static double bVelocity = 688.687;
+    public static double mHoodAngle = 0.0365514;
+    public static double bHoodAngle = 15.8227;
+    public static double hoodServoRange = 25.760525 - 5.252703;
+    public static double hoodServoPositionAtCalibration = 0.16;
+    public static double hoodServoAngleAtCalibration = 5.252703;
+    public static double SHOOTER_DECAY_FACTOR = 1;
+    public static double maxServoPos = 0.89;
+    public static double setVelocity = 725;
+    public static double threshold = 50;
+    public static double setHoodAngle = 22;
 }

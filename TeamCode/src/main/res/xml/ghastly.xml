@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<Robot type="FirstInspires-FTC">
+    <Webcam name="cw1" serialNumber="VendorProduct:vendor=0x046d|product=0x0825|connection=" />
+    <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
+        <LynxModule name="Control Hub" port="173">
+            <goBILDA5202SeriesMotor name="cm0" port="0" />
+            <goBILDA5202SeriesMotor name="cm1" port="1" />
+            <goBILDA5202SeriesMotor name="cm2" port="2" />
+            <goBILDA5202SeriesMotor name="cm3" port="3" />
+            <ContinuousRotationServo name="cs2" port="2" />
+            <LynxEmbeddedIMU name="imu" port="0" bus="0" />
+            <goBILDAPinpoint name="ci2" port="0" bus="2" />
+            <DigitalDevice name="cd0" port="0" />
+            <DigitalDevice name="cd1" port="1" />
+            <DigitalDevice name="cd2" port="2" />
+            <DigitalDevice name="cd3" port="3" />
+            <DigitalDevice name="cd4" port="4" />
+            <DigitalDevice name="cd5" port="5" />
+            <DigitalDevice name="cd6" port="6" />
+            <DigitalDevice name="cd7" port="7" />
+        </LynxModule>
+        <ServoHub name="Servo Hub 3" port="3">
+            <ServoFullRange name="ss0" port="0" />
+            <ServoFullRange name="ss1" port="1" />
+            <ServoFullRange name="ss2" port="2" />
+            <ServoFullRange name="ss3" port="3" />
+            <ServoFullRange name="ss4" port="4" />
+            <ServoFullRange name="ss5" port="5" />
+        </ServoHub>
+    </LynxUsbDevice>
+    <LynxUsbDevice name="Expansion Hub Portal 1" serialNumber="DQ2AC4BS" parentModuleAddress="2">
+        <LynxModule name="Expansion Hub 2" port="2">
+            <goBILDA5202SeriesMotor name="em0" port="0" />
+            <goBILDA5202SeriesMotor name="em1" port="1" />
+            <Motor name="em2" port="2" />
+            <Motor name="em3" port="3" />
+            <Servo name="es1" port="1" />
+            <Servo name="es2" port="2" />
+            <ServoFullRange name="es0" port="0" />
+            <ServoFullRange name="es1" port="1" />
+            <ServoFullRange name="es2" port="2" />
+            <ServoFullRange name="es3" port="3" />
+            <ServoFullRange name="es4" port="4" />
+            <ServoFullRange name="es5" port="5" />
+            <DigitalDevice name="ed0" port="0" />
+            <DigitalDevice name="ed1" port="1" />
+            <DigitalDevice name="ed2" port="2" />
+            <DigitalDevice name="ed3" port="3" />
+            <DigitalDevice name="ed4" port="4" />
+            <DigitalDevice name="ed5" port="5" />
+            <DigitalDevice name="ed6" port="6" />
+            <DigitalDevice name="ed7" port="7" />
+        </LynxModule>
+    </LynxUsbDevice>
+</Robot>
