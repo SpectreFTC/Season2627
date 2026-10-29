@@ -5,8 +5,11 @@ import android.annotation.SuppressLint;
 import com.qualcomm.robotcore.robot.Robot;
 import com.seattlesolvers.solverslib.geometry.Pose2d;
 import com.seattlesolvers.solverslib.geometry.Rotation2d;
+import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
+import com.seattlesolvers.solverslib.pedroCommand.TurnToCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
 import org.firstinspires.ftc.teamcode.globals.TagPoses;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -20,21 +23,18 @@ import java.util.List;
 
 public class AprilTagWebcam {
     private final AprilTagProcessor aprilTag;
-    private final TagPoses tagPoses;
     public AprilTagWebcam(AprilTagProcessor aprilTagProcessor, TagPoses tagPoses) {
         this.aprilTag = aprilTagProcessor;
-        this.tagPoses = tagPoses;
-
     }
 
-    private AprilTagDetection findTag(int tagID) {
+    private AprilTagClusterDetection findTag(String name) {
         for (AprilTagDetection detection : aprilTag.getDetections()) {
-            if (detection instanceof AprilTagSingleDetection) {
-                AprilTagSingleDetection singleDetection = (AprilTagSingleDetection) detection;
-                if (singleDetection.id == tagID) {
-                    return singleDetection;
+            if (detection instanceof AprilTagClusterDetection) {
+                AprilTagClusterDetection clusterDetection = (AprilTagClusterDetection) detection;
+                if (clusterDetection.metadata.name.equals(name)) {
+                    return clusterDetection;
                 }
-                else if (singleDetection.ftcPose == null) {
+                else if (clusterDetection.ftcPose == null) {
                     return null;
                 }
             }
@@ -64,50 +64,44 @@ public class AprilTagWebcam {
         }
     }
 
-    public RobotConstants.HiveState getHiveState(int tagID) {
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        AprilTagDetection hiveTag = hiveTag = findTag(tagID);
-
-
-        if (hiveTag == null) {
-            return RobotConstants.HiveState.NOT_VISIBLE;
-        }
-        double cameraRadians = Math.toRadians(RobotConstants.cameraAngle);
-        double hiveHeightInches = RobotConstants.cameraHeightIn + ((hiveTag.ftcPose.z * Math.cos(cameraRadians)) + (hiveTag.ftcPose.y * Math.sin(cameraRadians)));
-
-        if (hiveHeightInches > RobotConstants.hiveHeightUp) {
-            return RobotConstants.HiveState.UP;
-        }
-        else if (hiveHeightInches < RobotConstants.hiveHeightDown) {
-            return RobotConstants.HiveState.DOWN;
-        }
-        else {
-            return RobotConstants.HiveState.LEVEL;
-        }
-    }
-
-    public Pose2d relocalize(int tagID, double headingRad) {
-        Pose2d botPose = null;
-        AprilTagDetection tag = findTag(tagID);
-
-        RobotConstants.HiveState state = getHiveState(tagID);
-        Pose2d tagPose = tagPoses.get(tagID, state);
-        if (tagPose == null) {
+    public Pose2d relocalize(String name, Pose2d tagPose) {
+        AprilTagClusterDetection detection = findTag(name);
+        if (detection == null) {
             return null;
         }
 
-        double pitch = Math.toRadians(RobotConstants.cameraAngle);
-        double forward = tag.ftcPose.y * Math.cos(pitch) - tag.ftcPose.z * Math.sin(pitch);
-        double left = -tag.ftcPose.x;
+        double tagX = detection.metadata.fieldPosition.get(0);
+        double tagY = detection.metadata.fieldPosition.get(1);
 
-        double a = forward + RobotConstants.cameraForwardOffsetIn;
-        double b = left + RobotConstants.cameraLeftOffsetIn;
+        double rx = detection.robotPose.getPosition().x;
+        double ry = detection.robotPose.getPosition().y;
+        double rh = detection.robotPose.getOrientation().getYaw(AngleUnit.RADIANS);
 
-        double cos = Math.cos(headingRad);
-        double sin = Math.sin(headingRad);
-        double x = tagPose.getX() - (a * cos - b * sin);
-        double y = tagPose.getY() - (a * sin + b * cos);
+        double x;
+        double y;
 
-        return new Pose2d(x, y, new Rotation2d(headingRad));
+        if (name.equals("BLUE AUDIENCE") || name.equals("RED AUDIENCE")) {
+            x = tagX + rx;
+            y = tagY - ry;
+        }
+        else {
+            x = tagX - rx;
+            y = tagY + ry;
+            rh += Math.toRadians(180);
+        }
+
+        return (new Pose2d(x, y, rh));
+    }
+
+
+    public Pose2d autoAlign(String name, Pose2d robotPose) {
+        AprilTagClusterDetection detection = findTag(name);
+
+        if (detection == null) {
+            return null;
+        }
+
+        double targetHeading = robotPose.getHeading() +  Math.toRadians(detection.ftcPose.yaw);
+        return (new Pose2d(robotPose.getX(), robotPose.getY(), targetHeading));
     }
 }
