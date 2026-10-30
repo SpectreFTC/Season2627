@@ -1,6 +1,14 @@
 package org.firstinspires.ftc.teamcode.globals;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.seattlesolvers.solverslib.geometry.Translation2d;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+
+import java.util.concurrent.TransferQueue;
 
 @Config
 public class RobotConstants {
@@ -35,4 +43,9 @@ public class RobotConstants {
     public static double setVelocity = 725;
     public static double threshold = 50;
     public static double setHoodAngle = 22;
+
+    //april tag
+
+    public static Position cameraPose = new Position(DistanceUnit.MM, 35.292, -109.931, 301.822, 0);
+    public static YawPitchRollAngles cameraAngle = new YawPitchRollAngles(AngleUnit.DEGREES, 0, 32.337, 0, 0);
 }

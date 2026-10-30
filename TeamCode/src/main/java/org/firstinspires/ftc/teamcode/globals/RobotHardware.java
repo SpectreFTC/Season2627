@@ -9,6 +9,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
 public class RobotHardware {
 
     private static RobotHardware instance;
@@ -19,6 +23,8 @@ public class RobotHardware {
     public final DcMotorEx leftFront, rightFront, leftBack, rightBack;
     public final GoBildaPinpointDriver odo;
     public final VoltageSensor voltageSensor;
+    public final VisionPortal visionPortal;
+    public final AprilTagProcessor aprilTagProcessor;
 
     private RobotHardware(OpMode opMode) {
         this.opMode = opMode;
@@ -43,6 +49,14 @@ public class RobotHardware {
         hoodServo = hardwareMap.get(Servo.class, "cs0");
         odo = hardwareMap.get(GoBildaPinpointDriver.class, "ei0");
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
+        aprilTagProcessor = new AprilTagProcessor.Builder()
+                .setCameraPose(RobotConstants.cameraPose, RobotConstants.cameraAngle)
+                .build();
+        visionPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam"))
+                .addProcessor(aprilTagProcessor)
+                .build();
+
     }
 
 

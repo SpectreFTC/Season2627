@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.globals;
 
+import com.pedropathing.math.Pose;
+import com.seattlesolvers.solverslib.geometry.Translation2d;
+
 /**
  * Utility class containing various mathematical and helper functions
  * relevant for robot operations.
@@ -63,5 +66,9 @@ public class RobotUtils {
             return false;
         }
         return x * x + y * y <= r * r;
+    }
+
+    public static Translation2d pedroToField(double x, double y) {
+        return new Translation2d(x, y);
     }
 }
