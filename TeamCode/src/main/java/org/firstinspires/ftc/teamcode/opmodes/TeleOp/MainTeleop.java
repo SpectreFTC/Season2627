@@ -34,8 +34,8 @@ public class MainTeleop {
     public final ShooterSubsystem shooterSubsystem;
     public final IntakeSubsystem intakeSubsystem;
     public final Follower follower;
-    public final Pose audience;
-    public final Pose score;
+//    public final Pose audience;
+//    public final Pose score;
     int intakeState = 1;
     boolean flowerMechDown = false;
     boolean isFlyWheelStopped = false;
@@ -61,16 +61,16 @@ public class MainTeleop {
        subsystems.add(this.intakeSubsystem);
        multipleTelemetry = new MultipleTelemetry(opMode.telemetry, FtcDashboard.getInstance().getTelemetry());
        follower = Constants.create(opMode.hardwareMap);
-       if(isBlue){
-           follower.setPose(RobotConstants.bluePoseStorage);
-           audience = new Pose(1,1,1);
-           score = new Pose(1,1,1);
-       }else{
-           follower.setPose(RobotConstants.redPoseStorage);
-           audience = new Pose(1,1,1);
-           score = new Pose(1,1,1);
-       }
-       follower.setPose(new Pose(0,0));
+//       if(isBlue){
+////           follower.setPose(RobotConstants.bluePoseStorage);
+////           audience = new Pose(1,1,1);
+////           score = new Pose(1,1,1);
+//       }else{
+////           follower.setPose(RobotConstants.redPoseStorage);
+////           audience = new Pose(1,1,1);
+////           score = new Pose(1,1,1);
+//       }
+////       follower.setPose(new Pose(0,0));
 
     }
     private final ElapsedTime loopTimer = new ElapsedTime();
@@ -81,6 +81,7 @@ public class MainTeleop {
 
     public void loop(){
         follower.update();
+        follower.manual(gamepad1.getLeftY(), -gamepad1.getLeftX(), -0.6 *gamepad1.getRightX());
         bulkCache.clearCache();
         gamepad1.readButtons();
         gamepad2.readButtons();
@@ -123,39 +124,39 @@ public class MainTeleop {
         shooterSubsystem.setHoodAngle(RobotConstants.setHoodAngle);
 
 
-        if (gamepad1.wasJustPressed(GamepadKeys.Button.X)) {
-            if (!isAutoAligning) {
-                Pose currentPose = follower.pose();
-                Path straightLine = Paths.line(currentPose, audience);
-                follower.follow(straightLine);
-                isAutoAligning = true;
-            }
-        }
-        if (gamepad1.wasJustPressed(GamepadKeys.Button.Y)) {
-            if (!isAutoAligning) {
-                Pose currentPose = follower.pose();
-                Pose TARGET_POSE = new Pose(0,0,0);
-                Path straightLine = Paths.line(currentPose, score);
-
-                follower.follow(straightLine);
-                isAutoAligning = true;
-            }
-        }
-
-        if (isAutoAligning && !follower.isBusy()) {
-            isAutoAligning = false;
-        }
-
-        if (Math.abs(gamepad1.getLeftY()) > 0.2 || Math.abs(gamepad1.getLeftX()) > 0.2 || Math.abs(gamepad1.getRightX()) > 0.2) {
-            if (isAutoAligning) {
-                follower.stop();
-                isAutoAligning = false;
-            }
-        }
-
-        if (!isAutoAligning) {
-            follower.manual(gamepad1.getLeftY(), gamepad1.getLeftX(), gamepad1.getRightX());
-        }
+//        if (gamepad1.wasJustPressed(GamepadKeys.Button.X)) {
+//            if (!isAutoAligning) {
+//                Pose currentPose = follower.pose();
+//                Path straightLine = Paths.line(currentPose, audience);
+//                follower.follow(straightLine);
+//                isAutoAligning = true;
+//            }
+//        }
+//        if (gamepad1.wasJustPressed(GamepadKeys.Button.Y)) {
+//            if (!isAutoAligning) {
+//                Pose currentPose = follower.pose();
+//                Pose TARGET_POSE = new Pose(0,0,0);
+//                Path straightLine = Paths.line(currentPose, score);
+//
+//                follower.follow(straightLine);
+//                isAutoAligning = true;
+//            }
+//        }
+//
+//        if (isAutoAligning && !follower.isBusy()) {
+//            isAutoAligning = false;
+//        }
+//
+//        if (Math.abs(gamepad1.getLeftY()) > 0.2 || Math.abs(gamepad1.getLeftX()) > 0.2 || Math.abs(gamepad1.getRightX()) > 0.2) {
+//            if (isAutoAligning) {
+//                follower.stop();
+//                isAutoAligning = false;
+//            }
+//        }
+//
+//        if (!isAutoAligning) {
+//            follower.manual(gamepad1.getLeftY(), gamepad1.getLeftX(), gamepad1.getRightX());
+//        }
 
         shooterSubsystem.update();
         intakeSubsystem.update();
