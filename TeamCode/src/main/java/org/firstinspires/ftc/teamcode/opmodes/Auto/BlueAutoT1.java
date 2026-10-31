@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opmodes.Auto;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import static com.pedropathing.api.Paths.*;
 import com.pedropathing.api.Paths;
 
 import com.pedropathing.api.PoseFactory;
@@ -22,15 +21,14 @@ import org.firstinspires.ftc.teamcode.globals.RobotConstants;
 import org.firstinspires.ftc.teamcode.globals.RobotHardware;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
-@Autonomous(group = "COMP", name = "BLUE_RUN_AUTO")
-public class BlueAuto extends OpMode {
+@Autonomous(group = "COMP", name = "BLUE_RUN_AUTO_1T")
+public class BlueAutoT1 extends OpMode {
     CommandScheduler scheduler;
     IntakeSubsystem intakeSubsystem;
     ShooterSubsystem shooterSubsystem;
     Follower follower;
     private final PoseFactory poseFactory = PoseFactory.degrees();
 
-//    private final Pose start = poseFactory.of(86.1632, 132.81, -90);
     private final Pose start = poseFactory.of(86.1632, 132.81, -90);
     private final Pose path1 = poseFactory.of(86.3877, 116.9025, -89.1913);
     private final Pose point2 = poseFactory.of(130.9279, 43.9614, -90.2473);
@@ -78,8 +76,4 @@ public class BlueAuto extends OpMode {
         follower.update();
     }
 
-    @Override
-    public void stop() {
-        RobotConstants.bluePoseStorage = follower.pose();
-    }
 }

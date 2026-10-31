@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.tuning;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -81,6 +82,7 @@ import java.util.function.Supplier;
  * this app session, so MainTeleop uses it right away. Set {@code CLEAR_POINTS} to true in
  * Dashboard to start over. Every change is also written to the robot log.</p>
  */
+@Disabled
 @Config
 @TeleOp
 public class ShooterDistanceTuner extends OpMode {

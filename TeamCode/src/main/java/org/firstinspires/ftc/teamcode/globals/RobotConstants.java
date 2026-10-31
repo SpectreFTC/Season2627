@@ -1,25 +1,24 @@
 package org.firstinspires.ftc.teamcode.globals;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.pedropathing.math.Pose;
 
 @Config
 public class RobotConstants {
     //intake
     public static double intakePowerWhileIntaking = 1;
-    public static double transferPowerWhileIntaking = 0.3;
+    public static double transferPowerWhileIntaking = 1;
     public static double intakePowerWhileEjecting = -1;
     public static double transferPowerWhileEjecting = 1;
     public static double intakePowerWhileHolding = 0.2;
     public static double transferPowerWhileHolding = 0.1;
     public static double intakePowerWhileShooting = 1;
-    public static double transferPowerWhileShooting = -0.7;
+    public static double transferPowerWhileShooting = -0.9;
     public static double flowerServoPosDown = 0.41;
     public static double flowerServoPosUp = 0.95;
     //shooter
     public static double kV = 0.005134;
     public static double kS = 1.15;
-    public static double SHOOTER_kP = 0.0757;
+    public static double SHOOTER_kP = 0.07565;
     public static double SHOOTER_kI = 0;
     public static double SHOOTER_kD = 0;
     public static double SHOOTER_I_ZONE;
@@ -33,9 +32,9 @@ public class RobotConstants {
     public static double hoodServoAngleAtCalibration = 5.252703;
     public static double SHOOTER_DECAY_FACTOR = 1;
     public static double maxServoPos = 0.89;
-    public static double setVelocity = 710;
-    public static double threshold = 50;
+    public static double setVelocity = 700;
+    public static double autonSetVelocityRed = 690;
+    public static double autonSetVelocityBlue = 690;
     public static double setHoodAngle = 19;
-    public static Pose bluePoseStorage;
-    public static Pose redPoseStorage;
+    public static double AIM_KP = 1;
 }

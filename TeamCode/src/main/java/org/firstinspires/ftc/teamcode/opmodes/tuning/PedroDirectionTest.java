@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * </ol>
  * Nothing pressed: the robot stops. Pedro only drives the motors when a button is held.
  */
+@Disabled
 @TeleOp(group = "TEST", name = "Pedro Direction Test")
 public class PedroDirectionTest extends OpMode {
     private static final double POWER = 0.3;

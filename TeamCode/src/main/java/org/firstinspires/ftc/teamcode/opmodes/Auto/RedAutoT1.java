@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.opmodes.Auto;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import static com.pedropathing.api.Paths.*;
 import com.pedropathing.api.Paths;
 
 import com.pedropathing.api.PoseFactory;
@@ -14,18 +13,16 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
 import org.firstinspires.ftc.teamcode.globals.RobotHardware;
-import org.firstinspires.ftc.teamcode.globals.RobotUtils;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
-@Autonomous(group = "COMP", name = "RED_RUN_AUTO")
-public class RedAuto extends OpMode {
+@Autonomous(group = "COMP", name = "RED_RUN_AUTO_1T")
+public class RedAutoT1 extends OpMode {
     CommandScheduler scheduler;
     IntakeSubsystem intakeSubsystem;
     ShooterSubsystem shooterSubsystem;
@@ -79,8 +76,4 @@ public class RedAuto extends OpMode {
         follower.update();
     }
 
-    @Override
-    public void stop() {
-        RobotConstants.redPoseStorage = follower.pose();
-    }
 }
