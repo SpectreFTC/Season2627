@@ -2,6 +2,11 @@ package org.firstinspires.ftc.teamcode.globals;
 
 import com.acmerobotics.dashboard.config.Config;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+
 @Config
 public class RobotConstants {
     //intake
@@ -35,4 +40,10 @@ public class RobotConstants {
     public static double setVelocity = 725;
     public static double threshold = 50;
     public static double setHoodAngle = 22;
+    public static double camPitchDeg = 32.337;
+    public static double fCamOffset = -4.327992126;
+    public static double lCamOffset = 1.38944882;
+
+    public static String currentTag = "BLUE AUDIENCE";
+
 }

@@ -1,30 +1,21 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems.vision;
 
-import android.annotation.SuppressLint;
-
-import com.qualcomm.robotcore.robot.Robot;
 import com.seattlesolvers.solverslib.geometry.Pose2d;
-import com.seattlesolvers.solverslib.geometry.Rotation2d;
-import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
-import com.seattlesolvers.solverslib.pedroCommand.TurnToCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
-import org.firstinspires.ftc.teamcode.globals.TagPoses;
-import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagClusterDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.apriltag.AprilTagSingleDetection;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AprilTagWebcam {
     private final AprilTagProcessor aprilTag;
-    public AprilTagWebcam(AprilTagProcessor aprilTagProcessor, TagPoses tagPoses) {
+    public AprilTagWebcam(AprilTagProcessor aprilTagProcessor) {
         this.aprilTag = aprilTagProcessor;
+
     }
 
     private AprilTagClusterDetection findTag(String name) {
@@ -70,27 +61,24 @@ public class AprilTagWebcam {
             return null;
         }
 
-        double tagX = detection.metadata.fieldPosition.get(0);
-        double tagY = detection.metadata.fieldPosition.get(1);
+        //multiply by neg 1 if heading is flipped
+        double tag_heading = Math.PI + (detection.ftcPose.yaw);
+        double botHeadingRad = Math.toRadians(tagPose.getHeading()) - tag_heading;
 
-        double rx = detection.robotPose.getPosition().x;
-        double ry = detection.robotPose.getPosition().y;
-        double rh = detection.robotPose.getOrientation().getYaw(AngleUnit.RADIANS);
+        //cam to april tag relative pos
+        //correct for cam pitch
+        double fr = (detection.ftcPose.y * Math.cos(Math.toRadians(RobotConstants.camPitchDeg))) - (detection.ftcPose.z * Math.sin(Math.toRadians(RobotConstants.camPitchDeg)));
+        double lr = -detection.ftcPose.x;
 
-        double x;
-        double y;
+        //camera pos, correcting for heading
+        double cx = tagPose.getX() - (fr * Math.cos(botHeadingRad) - lr * Math.sin(botHeadingRad));
+        double cy = tagPose.getY() - (fr * Math.sin(botHeadingRad) + lr * Math.cos(botHeadingRad));
 
-        if (name.equals("BLUE AUDIENCE") || name.equals("RED AUDIENCE")) {
-            x = tagX + rx;
-            y = tagY - ry;
-        }
-        else {
-            x = tagX - rx;
-            y = tagY + ry;
-            rh += Math.toRadians(180);
-        }
+        //robot pos, correcting for heading (for cam offsets)
+        double rx = cx - (RobotConstants.fCamOffset * Math.cos(botHeadingRad) - RobotConstants.lCamOffset * Math.sin(botHeadingRad));
+        double ry = cy - (RobotConstants.fCamOffset * Math.sin(botHeadingRad) + RobotConstants.lCamOffset * Math.cos(botHeadingRad));
 
-        return (new Pose2d(x, y, rh));
+        return new Pose2d(rx, ry, Math.toDegrees(botHeadingRad));
     }
 
 
