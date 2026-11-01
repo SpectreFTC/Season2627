@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems.vision;
 
+import com.pedropathing.math.Pose;
 import com.seattlesolvers.solverslib.geometry.Pose2d;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -55,7 +56,7 @@ public class AprilTagWebcam {
         }
     }
 
-    public Pose2d relocalize(String name, Pose2d tagPose) {
+    public Pose relocalize(String name, Pose2d tagPose) {
         AprilTagClusterDetection detection = findTag(name);
         if (detection == null) {
             return null;
@@ -78,7 +79,7 @@ public class AprilTagWebcam {
         double rx = cx - (RobotConstants.fCamOffset * Math.cos(botHeadingRad) - RobotConstants.lCamOffset * Math.sin(botHeadingRad));
         double ry = cy - (RobotConstants.fCamOffset * Math.sin(botHeadingRad) + RobotConstants.lCamOffset * Math.cos(botHeadingRad));
 
-        return new Pose2d(rx, ry, Math.toDegrees(botHeadingRad));
+        return new Pose(rx, ry, Math.toDegrees(botHeadingRad));
     }
 
 
