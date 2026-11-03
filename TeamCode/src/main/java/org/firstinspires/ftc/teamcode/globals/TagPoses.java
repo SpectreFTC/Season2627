@@ -5,16 +5,16 @@ import com.seattlesolvers.solverslib.geometry.Translation2d;
 
 public class TagPoses {
     //Positions
-    public static Translation2d redAudience = new Translation2d(57.758, 56.31);
-    public static Translation2d blueAudience = new Translation2d(83.258, 56.31);
-    public static Translation2d redScoring = new Translation2d(57.758, 83.69);
-    public static Translation2d blueScoring = new Translation2d(83.258, 84.69);
+    public static Pose2d redAudience = new Pose2d(57.758, 56.31, Math.toRadians(-90));
+    public static Pose2d blueAudience = new Pose2d(83.258, 56.31, Math.toRadians(-90));
+    public static Pose2d redScoring = new Pose2d(57.758, 83.69, Math.toRadians(90));
+    public static Pose2d blueScoring = new Pose2d(83.258, 84.69, Math.toRadians(90));
 
     public TagPoses() {
 
     }
 
-    public static Translation2d get(String name) {
+    public static Pose2d get(String name) {
 
         switch (name) {
             case "BLUE AUDIENCE": return blueAudience;

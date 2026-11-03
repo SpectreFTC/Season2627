@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.commandbase.subsystems.PinpointOdometrySub
 import org.firstinspires.ftc.teamcode.commandbase.subsystems.vision.AprilTagWebcam;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
 import org.firstinspires.ftc.teamcode.globals.RobotHardware;
+import org.firstinspires.ftc.teamcode.globals.TagPoses;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 
@@ -46,25 +47,21 @@ public class AprilTagOpMode extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            Pose position = aprilTagWebcam.relocalize("BLUE AUDIENCE", multipleTelemetry);
+            Pose position = aprilTagWebcam.relocalize("BLUE AUDIENCE", TagPoses.get(RobotConstants.currentTag));
 
-            Pose2d robotPose = odo.getPose();
-
-            double target_heading = aprilTagWebcam.autoAlign("BLUE AUDIENCE", robotPose);
-
-            if (gamepad1.a) {
-                scheduler.schedule(new TurnToCommand(follower, target_heading));
-            }
-            if (gamepad1.b) {
+            if (gamepad1.b && position != null) {
                 follower.setPose(position);
             }
 
-            telemetry.addData("reloc position: ", position);
-            telemetry.addData("target heading: ", Math.toRadians(target_heading));
-            telemetry.addData("actual positoin: ", follower.pose());
+            if (position != null) {
+                multipleTelemetry.addData("reloc heading deg", Math.toDegrees(position.heading()));
+            }
+            multipleTelemetry.addData("follower heading deg", Math.toDegrees(follower.pose().heading()));
 
-            multipleTelemetry.addData("reloc position: ", position);
-            multipleTelemetry.addData("target heading: ", Math.toDegrees(target_heading));
+            if (position != null) {
+                multipleTelemetry.addData("reloc heading deg", Math.toDegrees(position.heading()));
+            }
+            multipleTelemetry.addData("follower heading deg", Math.toDegrees(follower.pose().heading()));
             multipleTelemetry.addData("actual positoin: ", follower.pose());
 
             telemetry.update();

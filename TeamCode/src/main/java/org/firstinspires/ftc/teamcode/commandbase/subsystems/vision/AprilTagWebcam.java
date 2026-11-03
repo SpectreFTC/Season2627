@@ -1,46 +1,30 @@
 package org.firstinspires.ftc.teamcode.commandbase.subsystems.vision;
 
-import android.annotation.SuppressLint;
-
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.pedropathing.math.Pose;
-import com.qualcomm.robotcore.robot.Robot;
 import com.seattlesolvers.solverslib.geometry.Pose2d;
-import com.seattlesolvers.solverslib.geometry.Rotation2d;
-import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
-import com.seattlesolvers.solverslib.pedroCommand.TurnToCommand;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.globals.RobotConstants;
-import org.firstinspires.ftc.teamcode.globals.RobotUtils;
-import org.firstinspires.ftc.teamcode.globals.TagPoses;
-import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagClusterDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.apriltag.AprilTagSingleDetection;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AprilTagWebcam {
     private final AprilTagProcessor aprilTag;
     public AprilTagWebcam(AprilTagProcessor aprilTagProcessor) {
         this.aprilTag = aprilTagProcessor;
+
     }
 
     private AprilTagClusterDetection findTag(String name) {
         for (AprilTagDetection detection : aprilTag.getDetections()) {
-            if (detection instanceof AprilTagClusterDetection) {
-                AprilTagClusterDetection clusterDetection = (AprilTagClusterDetection) detection;
-                if (clusterDetection.metadata.name.equals(name)) {
-                    return clusterDetection;
-                }
-                else if (clusterDetection.ftcPose == null) {
-                    return null;
-                }
-            }
+            if (!(detection instanceof AprilTagClusterDetection)) continue;
+            AprilTagClusterDetection cluster = (AprilTagClusterDetection) detection;
+            if (cluster.metadata == null || cluster.ftcPose == null) continue;
+            if (cluster.metadata.name.equals(name)) return cluster;
         }
         return null;
     }
@@ -67,60 +51,29 @@ public class AprilTagWebcam {
         }
     }
 
-    public Pose relocalize(String name, MultipleTelemetry telemetry) {
+    public Pose relocalize(String name, Pose2d tagPose) {
         AprilTagClusterDetection detection = findTag(name);
         if (detection == null) {
             return null;
         }
 
+        //multiply by neg 1 if heading is flipped
+        double tag_heading = Math.PI + (detection.ftcPose.yaw);
+        double botHeadingRad = tagPose.getHeading() - tag_heading;
 
-        double tagX = TagPoses.get(name).getX();
-        double tagY = TagPoses.get(name).getY();
+        //cam to april tag relative pos
+        //correct for cam pitch
+        double fr = (detection.ftcPose.y * Math.cos(Math.toRadians(RobotConstants.camPitchDeg))) - (detection.ftcPose.z * Math.sin(Math.toRadians(RobotConstants.camPitchDeg)));
+        double lr = -detection.ftcPose.x;
 
-        double rx = detection.robotPose.getPosition().x;
-        double ry = detection.robotPose.getPosition().y;
-        double yaw = detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES);
-        double rh;
+        //camera pos, correcting for heading
+        double cx = tagPose.getX() - (fr * Math.cos(botHeadingRad) - lr * Math.sin(botHeadingRad));
+        double cy = tagPose.getY() - (fr * Math.sin(botHeadingRad) + lr * Math.cos(botHeadingRad));
 
-        double x;
-        double y;
+        //robot pos, correcting for heading (for cam offsets)
+        double rx = cx - (RobotConstants.fCamOffset * Math.cos(botHeadingRad) - RobotConstants.lCamOffset * Math.sin(botHeadingRad));
+        double ry = cy - (RobotConstants.fCamOffset * Math.sin(botHeadingRad) + RobotConstants.lCamOffset * Math.cos(botHeadingRad));
 
-        if (name.equals("BLUE AUDIENCE") || name.equals("RED AUDIENCE")) {
-            x = tagX + rx;
-            y = tagY + ry;
-            rh = 90 + yaw;
-        }
-        else {
-            x = tagX - rx;
-            y = tagY + ry;
-            rh = 270 + yaw;
-        }
-        telemetry.addData("tagX", tagX);
-        telemetry.addData("tagY", tagY);
-        telemetry.addData("robX", rx);
-        telemetry.addData("robY", ry);
-        telemetry.addData("yaw", yaw);
-        telemetry.addData("tag name", detection.metadata.name);
-        return (new Pose(x, y, Math.toRadians(rh)));
-    }
-
-
-    public double autoAlign(String name, Pose2d robotPose) {
-        AprilTagClusterDetection detection = findTag(name);
-        double targetHeading = robotPose.getHeading();
-
-        if (detection == null) {
-            return 0;
-        }
-        //use this if the two sides change differently
-//        if (name.equals("BLUE AUDIENCE") || name.equals("RED AUDIENCE")) {
-//            targetHeading += Math.toRadians(detection.ftcPose.yaw);
-//        }
-//        else {
-//            targetHeading += Math.toRadians(detection.ftcPose.yaw);
-//        }
-
-        targetHeading = Math.toRadians(detection.ftcPose.bearing);
-        return (targetHeading);
+        return new Pose(rx, ry, botHeadingRad);
     }
 }
