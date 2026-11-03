@@ -21,15 +21,10 @@ public class AprilTagWebcam {
 
     private AprilTagClusterDetection findTag(String name) {
         for (AprilTagDetection detection : aprilTag.getDetections()) {
-            if (detection instanceof AprilTagClusterDetection) {
-                AprilTagClusterDetection clusterDetection = (AprilTagClusterDetection) detection;
-                if (clusterDetection.metadata.name.equals(name)) {
-                    return clusterDetection;
-                }
-                else if (clusterDetection.ftcPose == null) {
-                    return null;
-                }
-            }
+            if (!(detection instanceof AprilTagClusterDetection)) continue;
+            AprilTagClusterDetection cluster = (AprilTagClusterDetection) detection;
+            if (cluster.metadata == null || cluster.ftcPose == null) continue;
+            if (cluster.metadata.name.equals(name)) return cluster;
         }
         return null;
     }
@@ -64,7 +59,7 @@ public class AprilTagWebcam {
 
         //multiply by neg 1 if heading is flipped
         double tag_heading = Math.PI + (detection.ftcPose.yaw);
-        double botHeadingRad = Math.toRadians(tagPose.getHeading()) - tag_heading;
+        double botHeadingRad = tagPose.getHeading() - tag_heading;
 
         //cam to april tag relative pos
         //correct for cam pitch
@@ -79,18 +74,6 @@ public class AprilTagWebcam {
         double rx = cx - (RobotConstants.fCamOffset * Math.cos(botHeadingRad) - RobotConstants.lCamOffset * Math.sin(botHeadingRad));
         double ry = cy - (RobotConstants.fCamOffset * Math.sin(botHeadingRad) + RobotConstants.lCamOffset * Math.cos(botHeadingRad));
 
-        return new Pose(rx, ry, Math.toDegrees(botHeadingRad));
-    }
-
-
-    public Pose2d autoAlign(String name, Pose2d robotPose) {
-        AprilTagClusterDetection detection = findTag(name);
-
-        if (detection == null) {
-            return null;
-        }
-
-        double targetHeading = robotPose.getHeading() +  Math.toRadians(detection.ftcPose.yaw);
-        return (new Pose2d(robotPose.getX(), robotPose.getY(), targetHeading));
+        return new Pose(rx, ry, botHeadingRad);
     }
 }

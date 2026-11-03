@@ -49,16 +49,19 @@ public class AprilTagOpMode extends LinearOpMode {
 
             Pose position = aprilTagWebcam.relocalize("BLUE AUDIENCE", TagPoses.get(RobotConstants.currentTag));
 
-            Pose robotPose = follower.pose();
-
-            if (gamepad1.b) {
+            if (gamepad1.b && position != null) {
                 follower.setPose(position);
             }
 
-            telemetry.addData("reloc position: ", position);
-            telemetry.addData("actual positoin: ", follower.pose());
+            if (position != null) {
+                multipleTelemetry.addData("reloc heading deg", Math.toDegrees(position.heading()));
+            }
+            multipleTelemetry.addData("follower heading deg", Math.toDegrees(follower.pose().heading()));
 
-            multipleTelemetry.addData("reloc position: ", position);
+            if (position != null) {
+                multipleTelemetry.addData("reloc heading deg", Math.toDegrees(position.heading()));
+            }
+            multipleTelemetry.addData("follower heading deg", Math.toDegrees(follower.pose().heading()));
             multipleTelemetry.addData("actual positoin: ", follower.pose());
 
             telemetry.update();
