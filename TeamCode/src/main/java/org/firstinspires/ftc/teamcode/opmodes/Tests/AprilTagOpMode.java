@@ -53,16 +53,13 @@ public class AprilTagOpMode extends LinearOpMode {
                 follower.setPose(position);
             }
 
-            if (position != null) {
-                multipleTelemetry.addData("reloc heading deg", Math.toDegrees(position.heading()));
-            }
-            multipleTelemetry.addData("follower heading deg", Math.toDegrees(follower.pose().heading()));
 
             if (position != null) {
                 multipleTelemetry.addData("reloc heading deg", Math.toDegrees(position.heading()));
+                multipleTelemetry.addData("reloc pose", (position.x() + ", " + position.y()));
             }
             multipleTelemetry.addData("follower heading deg", Math.toDegrees(follower.pose().heading()));
-            multipleTelemetry.addData("actual positoin: ", follower.pose());
+            multipleTelemetry.addData("follower pose ", (follower.pose().x() + ", " + follower.pose().y()));
 
             telemetry.update();
             multipleTelemetry.update();

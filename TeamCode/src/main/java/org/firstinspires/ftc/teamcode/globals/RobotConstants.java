@@ -41,8 +41,9 @@ public class RobotConstants {
     public static double threshold = 50;
     public static double setHoodAngle = 22;
     public static double camPitchDeg = 32.337;
-    public static double fCamOffset = -4.327992126;
-    public static double lCamOffset = 1.38944882;
+    public static double fCamOffset = -12.569;
+    public static double lCamOffset = -1.573;
+    public static double yawSign = 1;
 
     public static String currentTag = "BLUE AUDIENCE";
 
